@@ -49,7 +49,7 @@ void CGene::vEvaluateFitness(CLFLnetEvaluator* cEvaluator)
 
 void CGene::vCrossover(CGene* pcParent1, CGene* pcParent2, CGene* pcChild1, CGene* pcChild2)
 {
-    int iParts = MyMath::dRand() * 3 + 1;
+    int iParts = MyMath::dRand() * I_MAX_CUTS_CROSS + 1;
     int iLastCut = 0;
     int iCut = 0;
     int iPrev = 0;

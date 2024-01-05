@@ -9,7 +9,8 @@ class CGene;
 class CSubPopulation
 {
 private:
-	std::vector<CGene*>* vpcGenes;
+	vector<CGene*>* vpcGenes;
+	vector<CLFLnetEvaluator*> vpcEvaluators;
 	CLFLnetEvaluator* cEv;
 	int iGenes;
 
@@ -19,11 +20,21 @@ public:
 		cEv->bConfigure(ev.sGetNetName());
 		this->iGenes = iGenes;
 	}
+	inline ~CSubPopulation() {
+		for (auto g : *vpcGenes)
+			delete g;
+		delete vpcGenes;
+		for (auto e : vpcEvaluators)
+			delete e;
+		delete cEv;
+
+	}
 	void vEvalSortGenes();
 	void vInit();
 	std::vector<int> vGetBest();
 	double dGetBestValue();
 	void vCrossMutate();
+	void vConfEval(CLFLnetEvaluator* cE, ATL::CString sName);
 	std::vector<CGene*>* pvpcGetTopGenes(int iNum);
 	void vMigrateInto(std::vector<CGene*>* vGenesToMigrate);
 	void vRunSubPop(const bool& bKeepRunning, int iSubId, vector<vector<CGene*>>& vpcBestGenes, vector<int>& vCurrentBest, double& dBestFitness, mutex& mMutex);
@@ -44,6 +55,13 @@ public:
 				vStopAsync();
 			}
 		}
+		for (auto s : vpcSubPopulations) {
+			delete s;
+		}
+		for (auto vg : vpcBestGenes) {
+			for( auto g : vg)
+				delete g;
+		}
 		
 	}
 
@@ -52,7 +70,7 @@ public:
 		for (auto pSub : vpcSubPopulations) {
 			pSub->vInit();
 			vpcBestGenes.push_back(vector<CGene*>());
-			for (int j = 0; j < iBestToMigrate; j++) {
+			for (int j = 0; j < I_BEST_TO_MIGRATE; j++) {
 				vpcBestGenes.at(index).push_back(nullptr);
 			}
 			index++;

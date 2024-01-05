@@ -1,35 +1,83 @@
 #include "Population.h"
 #include <algorithm>
+#include <future>
+#include <execution>
+#include <omp.h>
 #include "Gene.h"
 #include "Evaluator.h"
 
 void CSubPopulation::vEvalSortGenes()
 {
-	for (int i = 0; i < vpcGenes->size(); i++) {
+	/*for (int i = 0; i < vpcGenes->size(); i++) {
 		vpcGenes->at(i)->vEvaluateFitness(cEv);
+	}*/
+
+#pragma omp parallel for
+	for (int i = 0; i < I_POP_SIZE; ++i) {
+		(*vpcGenes)[i]->vEvaluateFitness(vpcEvaluators[i]);
 	}
-	/*vector<thread*> vtEvalThreads(vpcGenes->size(), nullptr);
-	for (int i = 0; i < vpcGenes->size(); i++) {
+
+	/*vector<thread*> vtEvalThreads(I_POP_SIZE, nullptr);
+	for (int i = 0; i < I_POP_SIZE; i++) {
 		vtEvalThreads[i] = new thread([&, i]() {
-			vpcGenes->at(i)->vEvaluateFitness(cEv);
+			vpcGenes->at(i)->vEvaluateFitness(vpcEvaluators[i]);
 			});
 	}
-	for (int i = 0; i < vpcGenes->size(); i++) {
+	for (int i = 0; i < I_POP_SIZE; i++) {
 		vtEvalThreads[i]->join();
 	}
-	for (int i = 0; i < vpcGenes->size(); i++) {
+	for (int i = 0; i < I_POP_SIZE; i++) {
 		delete vtEvalThreads[i];
 	}*/
+
+	//std::vector<std::future<void>> futures;
+	//for (size_t i = 0; i < I_POP_SIZE; ++i) {
+	//	futures.push_back(std::async(std::launch::async, [&] {
+	//		vpcGenes->at(i)->vEvaluateFitness(vpcEvaluators[i]);
+	//		}));
+	//}
+
+	//// Wait for all tasks to complete
+	//for (auto& future : futures) {
+	//	future.wait();
+	//}
+
 	std::sort(vpcGenes->begin(), vpcGenes->end(), [](CGene* a, CGene* b) { return a->dGetFitness() > b->dGetFitness(); });
 }
 
 void CSubPopulation::vInit()
 {
-	vpcGenes = new std::vector<CGene*>();
+	vpcGenes = new std::vector<CGene*>(I_POP_SIZE);
 	for (int i = 0; i < I_POP_SIZE; i++) {
 		CGene* p = new CGene(cEv);
-		vpcGenes->push_back(p);
+		vpcGenes->at(i) = (p);
+		vpcEvaluators.push_back(new CLFLnetEvaluator());
 	}
+
+	auto sName = cEv->sGetNetName();
+
+#pragma omp parallel for
+	for (int i = 0; i < I_POP_SIZE; ++i) {
+		vpcEvaluators[i]->bConfigure(sName);
+	}
+
+	/*vector<thread*> vtEvalThreads(I_POP_SIZE, nullptr);
+	for (int i = 0; i < I_POP_SIZE; i++) {
+		vpcEvaluators.push_back( new CLFLnetEvaluator());
+		vtEvalThreads[i] = new thread([&, i]() {
+			vConfEval(vpcEvaluators[i], sName);
+			});
+	}
+	for (int i = 0; i < I_POP_SIZE; i++) {
+		vtEvalThreads[i]->join();
+	}
+	for (int i = 0; i < I_POP_SIZE; i++) {
+		delete vtEvalThreads[i];
+	}*/
+}
+
+void CSubPopulation::vConfEval(CLFLnetEvaluator* cE, ATL::CString sName) {
+	cE->bConfigure(sName);
 }
 
 std::vector<int> CSubPopulation::vGetBest()
@@ -64,7 +112,7 @@ void CSubPopulation::vCrossMutate()
 		CGene* pcP1 = vpcGenes->at(iGetParentsId());
 		
 		CGene* pcP2 = vpcGenes->at(iGetParentsId());
-		if (MyMath::dRand() < dCrossoverChance) {
+		if (MyMath::dRand() < D_CROSSOVER_CHANCE) {
 			CGene* pcC1 = new CGene();
 			CGene* pcC2 = new CGene();
 			CGene::vCrossover(pcP1, pcP2, pcC1, pcC2);
@@ -114,14 +162,14 @@ void CSubPopulation::vRunSubPop(const bool& bKeepRunning, int iSubId, vector<vec
 	cout << iSubId << endl;
 	while (bKeepRunning) {
 		iGenerations++;
-		if (iGenerations % iMigrationGap == 0) {
+		if (iGenerations % I_MIGRATION_GAP == 0) {
 			vector<CGene*>* pvpcGenesToMigrate = new vector<CGene*>();
 			for (int i = 0; i < 2; i++) {
 				int index = 0;
 				do {
 					index = MyMath::dRand() * I_SUB_POPS;
 				} while (index == iSubId);
-				for (int j = 0; j < iBestToMigrate; j++) {
+				for (int j = 0; j < I_BEST_TO_MIGRATE; j++) {
 					if (vpcBestGenes.at(i).at(j) != nullptr) {
 						pvpcGenesToMigrate->push_back(new CGene(vpcBestGenes.at(i).at(j)));
 					}
@@ -137,10 +185,10 @@ void CSubPopulation::vRunSubPop(const bool& bKeepRunning, int iSubId, vector<vec
 			vCurrentBest = vGetBest();
 		}
 		mMutex.unlock();
-		if (iGenerations % iMigrationGap == 0) {
+		if (iGenerations % I_MIGRATION_GAP == 0) {
 		
-			vector<CGene*>* pvpvBestGenes = pvpcGetTopGenes(iBestToMigrate);
-			for (int i = 0; i < iBestToMigrate; i++) {
+			vector<CGene*>* pvpvBestGenes = pvpcGetTopGenes(I_BEST_TO_MIGRATE);
+			for (int i = 0; i < I_BEST_TO_MIGRATE; i++) {
 				delete vpcBestGenes.at(iSubId).at(i);
 				vpcBestGenes.at(iSubId).at(i) = pvpvBestGenes->at(i);
 			}

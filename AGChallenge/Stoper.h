@@ -35,10 +35,12 @@ public:
 		double* dPassed = new double(0.0);
 		cCounter.vSetStartNow();
 		cCounter.bGetTimePassed(dPassed);
+		int iNumIters = 0;
 		while (int(*dPassed) <= iBound) {
-
+			iNumIters++;
 			cOptimizer->vRunIteration();
-			std::cout << "TIME " << *dPassed << "\t| " << cOptimizer->dGetBestFitness() << endl;
+			if (iNumIters % 10000 == 0)
+				std::cout << "TIME " << *dPassed << "\t| " << cOptimizer->dGetBestFitness() << endl;
 
 			cCounter.bGetTimePassed(dPassed);
 		}
