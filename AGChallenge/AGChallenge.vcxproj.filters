@@ -42,7 +42,7 @@
     <ClCompile Include="fitness.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Gene.cpp">
+    <ClCompile Include="Individual.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Population.cpp">
@@ -74,13 +74,13 @@
     <ClInclude Include="fitness.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Gene.h">
+    <ClInclude Include="Individual.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Population.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stoper.h">
+    <ClInclude Include="Executor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="settings.h">

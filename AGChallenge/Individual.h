@@ -4,7 +4,7 @@
 
 
 
-class CGene
+class CIndividual
 {
 
 	std::vector<int>* vSolution;
@@ -12,18 +12,18 @@ class CGene
 	double dFitness;
 
 public:
-	CGene(CLFLnetEvaluator* cEv);
-	CGene();
+	CIndividual(CLFLnetEvaluator* cEv);
+	CIndividual();
 	//Gene(Gene&& cOriginal)noexcept;
-	CGene(CGene* pcToCopy);
-	inline ~CGene() {
+	CIndividual(CIndividual* pcToCopy);
+	inline ~CIndividual() {
 		if (vSolution != nullptr)
 		{
 			delete vSolution;
 		}
 	}
 	void vEvaluateFitness(CLFLnetEvaluator* cEvaluator);
-	static void vCrossover(CGene* pcParent1, CGene* pcParent2, CGene* pcChild1, CGene* pcChild2);
+	static void vCrossover(CIndividual* pcParent1, CIndividual* pcParent2, CIndividual* pcChild1, CIndividual* pcChild2);
 	void vMutate(CLFLnetEvaluator* cEv);
 	double dGetFitness() { return dFitness; }
 	std::vector<int> vGet() { return *vSolution; }

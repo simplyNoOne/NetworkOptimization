@@ -3,8 +3,8 @@
 #include <cfloat>
 #include <iostream>
 #include <windows.h>
-#include "Stoper.h"
-#include "Gene.h"
+#include "Executor.h"
+#include "Individual.h"
 
 using namespace std;
 
@@ -14,64 +14,54 @@ COptimizer::COptimizer(CLFLnetEvaluator &cEvaluator)
 	random_device c_seed_generator;
 
 	dBestFitness = 0;
-}//COptimizer::COptimizer(CEvaluator &cEvaluator)
+	iGenerations = 0;
+	iStagnation = 0;
+}
 
 void COptimizer::vInitialize()
 {
 	dBestFitness = -DBL_MAX;
 	v_current_best.clear();
-	if (B_ASYNC) {
-		pcPopulation = new CPopulation(c_evaluator, I_POP_SIZE, I_SUB_POPS);
-	}
-	else {
-		pcPopulation = new CPopulation(c_evaluator, I_POP_SIZE);
-	}
-	pcPopulation->vInit();
-	if (B_ASYNC) {
-		//vRunAsync(nullptr);
-	}
 	
-		
-}//void COptimizer::vInitialize()
+	pcPopulation = new CPopulation(c_evaluator, I_POP_SIZE, I_SUB_POPS);
+	
+	pcPopulation->vInit();
+			
+}
 
 void COptimizer::vRunIteration()
 {
-	if (!B_ASYNC) {
+	iGenerations++;
+	pcPopulation->vEvalSortGenes();
+	if (I_SUB_POPS > 1 && iGenerations % I_MIGRATION_GAP == 0) {
+		pcPopulation->vExchangeBestGenes();
 		pcPopulation->vEvalSortGenes();
-		double dIterFitness = pcPopulation->dGetBestValue();
-		if (dIterFitness > dBestFitness) {
-			dBestFitness = dIterFitness;
-			v_current_best = pcPopulation->vGetBest();
-		}
-		//cout << dBestFitness << endl;
-		pcPopulation->vCrossMutate();
 	}
-	else {
-		dBestFitness = pcPopulation->dGetBestValue();
+	
+	double dIterFitness = pcPopulation->dGetBestValue();
+	if (dIterFitness > dBestFitness) {
+		dBestFitness = dIterFitness;
 		v_current_best = pcPopulation->vGetBest();
-		//cout << dBestFitness << endl;
+		D_PENALTY = 0;
+		iStagnation = 0;
 	}
+	else{
+		iStagnation++;
+		if (iStagnation > I_WAIT) {
+			iStagnation = 0;
+			D_PENALTY += D_PUSH;
+		}
+	}
+	
+	//cout << dBestFitness << endl;
+	pcPopulation->vCrossMutate();
 	
 }
 
-void COptimizer::vRunAsync(const CStopAfterTime* pcStopper)
-{
-	pcPopulation->vLaunchAsync();
-	if (pcStopper) {
 
-		cout << "sdlfkj";
-		pcStopper->vWait(this);
-		cout << "AAAAAAAAAAAAAA";
-		pcPopulation->vStopAsync();
-		v_current_best = pcPopulation->vGetBest();
-		dBestFitness = pcPopulation->dGetBestValue();
-	}
-}
-
-void COptimizer::vRunUntil(const CStopper* cStopper)
+void COptimizer::vRunUntil(const CExecutor* cExecutor)
 {
-	cStopper->vRun(this);
+	cExecutor->vRun(this);
 }
-//void COptimizer::vRunIteration()
 
 

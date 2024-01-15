@@ -9,7 +9,7 @@
 #include "settings.h"
 
 class CGene;
-class CStopper;
+class CExecutor;
 class CStopAfterTime;
 
 using namespace std;
@@ -24,9 +24,8 @@ public:
 	//modify
 	void vInitialize();
 	void vRunIteration();
-	void vRunAsync(const CStopAfterTime* pcStopper);
-
-	void vRunUntil(const CStopper* cStopper);
+	
+	void vRunUntil(const CExecutor* cExecutor);
 	double dGetBestFitness() { return dBestFitness; }
 
 	inline ~COptimizer() {
@@ -36,6 +35,8 @@ public:
 private:
 	//throw away
 	double dBestFitness;
+	int iGenerations;
+	int iStagnation;
 	
 
 	//	Population* cPopulation;

@@ -1,9 +1,9 @@
-#include "Gene.h"
+#include "Individual.h"
 #include "Evaluator.h"
 #include "MyMath.h"
 #include "settings.h"
 
-CGene::CGene(CLFLnetEvaluator* cEv)
+CIndividual::CIndividual(CLFLnetEvaluator* cEv)
 {
     vSolution = new std::vector<int>();
     vSolution->resize((size_t)cEv->iGetNumberOfBits());
@@ -16,7 +16,7 @@ CGene::CGene(CLFLnetEvaluator* cEv)
     }
 }
 
-CGene::CGene()
+CIndividual::CIndividual()
 {
     vSolution = new std::vector<int>();
     bCalculated = false;
@@ -31,7 +31,7 @@ CGene::CGene()
     cOriginal.vSolution = nullptr;
 }
 */
-CGene::CGene(CGene* pcToCopy)
+CIndividual::CIndividual(CIndividual* pcToCopy)
 {
     vSolution = new std::vector<int>();
     bCalculated = pcToCopy->bCalculated;
@@ -39,7 +39,7 @@ CGene::CGene(CGene* pcToCopy)
     std::copy(pcToCopy->vSolution->begin(), pcToCopy->vSolution->end(), std::back_inserter(*vSolution));
 }
 
-void CGene::vEvaluateFitness(CLFLnetEvaluator* cEvaluator)
+void CIndividual::vEvaluateFitness(CLFLnetEvaluator* cEvaluator)
 {
     if (!bCalculated) {
         dFitness = cEvaluator->dEvaluate(vSolution);
@@ -47,7 +47,7 @@ void CGene::vEvaluateFitness(CLFLnetEvaluator* cEvaluator)
     }
 }
 
-void CGene::vCrossover(CGene* pcParent1, CGene* pcParent2, CGene* pcChild1, CGene* pcChild2)
+void CIndividual::vCrossover(CIndividual* pcParent1, CIndividual* pcParent2, CIndividual* pcChild1, CIndividual* pcChild2)
 {
     int iParts = MyMath::dRand() * I_MAX_CUTS_CROSS + 1;
     int iLastCut = 0;
@@ -70,12 +70,12 @@ void CGene::vCrossover(CGene* pcParent1, CGene* pcParent2, CGene* pcChild1, CGen
     std::copy(pcParent2->vSolution->begin() + iPrev, pcParent2->vSolution->end(), back_inserter(*vC2));
 }
 
-void CGene::vMutate(CLFLnetEvaluator* cEv)
+void CIndividual::vMutate(CLFLnetEvaluator* cEv)
 {
     int i = 0;
     int iMuts = 0;
     for (int i = 0; i < vSolution->size(); i++) {
-        if (MyMath::dRand() < D_MUTATION_CHANCE) {
+        if (MyMath::dRand() < (D_MUTATION_CHANCE)) {
             int newVal = MyMath::dRand() * cEv->iGetNumberOfValues(i);
             vSolution->at(i) = newVal;
         }

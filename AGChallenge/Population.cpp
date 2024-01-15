@@ -3,54 +3,37 @@
 #include <future>
 #include <execution>
 #include <omp.h>
-#include "Gene.h"
+#include "Individual.h"
 #include "Evaluator.h"
+
+
+
+
+CSubPopulation::~CSubPopulation()
+{
+	for (auto g : *vpcGenes)
+		delete g;
+	delete vpcGenes;
+	for (auto e : vpcEvaluators)
+		delete e;
+	delete cEv;
+}
 
 void CSubPopulation::vEvalSortGenes()
 {
-	/*for (int i = 0; i < vpcGenes->size(); i++) {
-		vpcGenes->at(i)->vEvaluateFitness(cEv);
-	}*/
-
 #pragma omp parallel for
 	for (int i = 0; i < I_POP_SIZE; ++i) {
 		(*vpcGenes)[i]->vEvaluateFitness(vpcEvaluators[i]);
 	}
 
-	/*vector<thread*> vtEvalThreads(I_POP_SIZE, nullptr);
-	for (int i = 0; i < I_POP_SIZE; i++) {
-		vtEvalThreads[i] = new thread([&, i]() {
-			vpcGenes->at(i)->vEvaluateFitness(vpcEvaluators[i]);
-			});
-	}
-	for (int i = 0; i < I_POP_SIZE; i++) {
-		vtEvalThreads[i]->join();
-	}
-	for (int i = 0; i < I_POP_SIZE; i++) {
-		delete vtEvalThreads[i];
-	}*/
-
-	//std::vector<std::future<void>> futures;
-	//for (size_t i = 0; i < I_POP_SIZE; ++i) {
-	//	futures.push_back(std::async(std::launch::async, [&] {
-	//		vpcGenes->at(i)->vEvaluateFitness(vpcEvaluators[i]);
-	//		}));
-	//}
-
-	//// Wait for all tasks to complete
-	//for (auto& future : futures) {
-	//	future.wait();
-	//}
-
-	std::sort(vpcGenes->begin(), vpcGenes->end(), [](CGene* a, CGene* b) { return a->dGetFitness() > b->dGetFitness(); });
+	std::sort(vpcGenes->begin(), vpcGenes->end(), [](CIndividual* a, CIndividual* b) { return a->dGetFitness() > b->dGetFitness(); });
 }
 
 void CSubPopulation::vInit()
 {
-	vpcGenes = new std::vector<CGene*>(I_POP_SIZE);
+	vpcGenes = new std::vector<CIndividual*>(I_POP_SIZE);
 	for (int i = 0; i < I_POP_SIZE; i++) {
-		CGene* p = new CGene(cEv);
-		vpcGenes->at(i) = (p);
+		vpcGenes->at(i) = new CIndividual(cEv);
 		vpcEvaluators.push_back(new CLFLnetEvaluator());
 	}
 
@@ -60,25 +43,9 @@ void CSubPopulation::vInit()
 	for (int i = 0; i < I_POP_SIZE; ++i) {
 		vpcEvaluators[i]->bConfigure(sName);
 	}
-
-	/*vector<thread*> vtEvalThreads(I_POP_SIZE, nullptr);
-	for (int i = 0; i < I_POP_SIZE; i++) {
-		vpcEvaluators.push_back( new CLFLnetEvaluator());
-		vtEvalThreads[i] = new thread([&, i]() {
-			vConfEval(vpcEvaluators[i], sName);
-			});
-	}
-	for (int i = 0; i < I_POP_SIZE; i++) {
-		vtEvalThreads[i]->join();
-	}
-	for (int i = 0; i < I_POP_SIZE; i++) {
-		delete vtEvalThreads[i];
-	}*/
+		
 }
 
-void CSubPopulation::vConfEval(CLFLnetEvaluator* cE, ATL::CString sName) {
-	cE->bConfigure(sName);
-}
 
 std::vector<int> CSubPopulation::vGetBest()
 {
@@ -90,7 +57,7 @@ double CSubPopulation::dGetBestValue()
 	return vpcGenes->at(0)->dGetFitness();
 }
 
-int iGetParentsId() {
+int CSubPopulation::iGetParentsId() {
 	int iGrpId = I_PARENTS_SUBGRPS - 1;
 	int iShift = I_OPTIONS * MyMath::dRand();
 	for (int i = 0, j = 2; i < iShift; i += j, j++) {
@@ -105,17 +72,17 @@ void CSubPopulation::vCrossMutate()
 	
 	int iNewPopSize = 0;
 	
-	std::vector<CGene*>* pvpcNewPop = new std::vector<CGene*>();
+	std::vector<CIndividual*>* pvpcNewPop = new std::vector<CIndividual*>();
 	while (iNewPopSize < I_POP_SIZE) {
 		
 		
-		CGene* pcP1 = vpcGenes->at(iGetParentsId());
+		CIndividual* pcP1 = vpcGenes->at(iGetParentsId());
 		
-		CGene* pcP2 = vpcGenes->at(iGetParentsId());
-		if (MyMath::dRand() < D_CROSSOVER_CHANCE) {
-			CGene* pcC1 = new CGene();
-			CGene* pcC2 = new CGene();
-			CGene::vCrossover(pcP1, pcP2, pcC1, pcC2);
+		CIndividual* pcP2 = vpcGenes->at(iGetParentsId());
+		if (MyMath::dRand() < D_CROSSOVER_CHANCE + D_PENALTY) {
+			CIndividual* pcC1 = new CIndividual();
+			CIndividual* pcC2 = new CIndividual();
+			CIndividual::vCrossover(pcP1, pcP2, pcC1, pcC2);
 			
 			pcC1->vMutate(cEv);
 			pcC2->vMutate(cEv);
@@ -124,8 +91,12 @@ void CSubPopulation::vCrossMutate()
 			pvpcNewPop->push_back((pcC2));
 		}
 		else {
-			pvpcNewPop->push_back(new CGene(pcP1));
-			pvpcNewPop->push_back(new CGene(pcP2));
+			if (MyMath::dRand() < (D_PARENT_MUTATION + D_PENALTY)) {
+				pcP1->vMutate(cEv);
+				pcP2->vMutate(cEv);
+			}
+			pvpcNewPop->push_back(new CIndividual(pcP1));
+			pvpcNewPop->push_back(new CIndividual(pcP2));
 		}
 		iNewPopSize += 2;
 	}
@@ -136,72 +107,56 @@ void CSubPopulation::vCrossMutate()
 	vpcGenes = pvpcNewPop;
 }
 
-std::vector<CGene*>* CSubPopulation::pvpcGetTopGenes(int iNum)
+std::vector<CIndividual*>* CSubPopulation::pvpcGetTopGenes(int iNum)
 {
-	std::vector<CGene*>* vToRet = new std::vector<CGene*>();
+	std::vector<CIndividual*>* vToRet = new std::vector<CIndividual*>();
 	for (int i = 0; i < iNum; i++) {
-		vToRet->push_back(new CGene(vpcGenes->at(i)));
+		vToRet->push_back(new CIndividual(vpcGenes->at(i)));
 	}
 	return vToRet;
 }
 
-void CSubPopulation::vMigrateInto(std::vector<CGene*>* vGenesToMigrate)
+void CSubPopulation::vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate)
 {
-	int iSize = vGenesToMigrate->size();
-	int iLocToMigrate = MyMath::dRand() * (I_POP_SIZE - iSize - 1);
-	for (int i = 0; i < iSize; i++) {
-		delete vpcGenes->at(iLocToMigrate + i);
-		vpcGenes->at(iLocToMigrate + i) = vGenesToMigrate->at(i);
+	int iLocToMigrate = MyMath::dRand() * (I_POP_SIZE / 2 - I_BEST_TO_MIGRATE - 1);
+#pragma omp parallel for
+	for (int i = 0; i < I_BEST_TO_MIGRATE; i++) {
+		delete vpcGenes->at(I_POP_SIZE / 2 + iLocToMigrate + i);
+		vpcGenes->at(I_POP_SIZE / 2 + iLocToMigrate + i) = new CIndividual(vGenesToMigrate->at(i));
 	}
 	delete vGenesToMigrate;
 }
 
-void CSubPopulation::vRunSubPop(const bool& bKeepRunning, int iSubId, vector<vector<CGene*>>& vpcBestGenes, vector<int>& vCurrentBest, double& dBestFitness, mutex& mMutex)
+
+CPopulation::~CPopulation()
 {
-	int iGenerations = 0;
-	cout << iSubId << endl;
-	while (bKeepRunning) {
-		iGenerations++;
-		if (iGenerations % I_MIGRATION_GAP == 0) {
-			vector<CGene*>* pvpcGenesToMigrate = new vector<CGene*>();
-			for (int i = 0; i < 2; i++) {
-				int index = 0;
-				do {
-					index = MyMath::dRand() * I_SUB_POPS;
-				} while (index == iSubId);
-				for (int j = 0; j < I_BEST_TO_MIGRATE; j++) {
-					if (vpcBestGenes.at(i).at(j) != nullptr) {
-						pvpcGenesToMigrate->push_back(new CGene(vpcBestGenes.at(i).at(j)));
-					}
-				}
-			}
-			vMigrateInto(pvpcGenesToMigrate);
+	for (auto s : vpcSubPopulations) {
+		delete s;
+	}
+	for (auto vg : vpcBestGenes) {
+		for (auto g : *vg)
+			delete g;
+		delete vg;
+	}
+}
+
+void CPopulation::vInit()
+{
+	int index = 0;
+	for (auto pSub : vpcSubPopulations) {
+		pSub->vInit();
+		vpcBestGenes.push_back(new vector<CIndividual*>());
+		for (int j = 0; j < I_BEST_TO_MIGRATE; j++) {
+			vpcBestGenes.at(index)->push_back(nullptr);
 		}
-		vEvalSortGenes();
-		double d_Iter_Fitness = dGetBestValue();
-		mMutex.lock();
-		if (d_Iter_Fitness > dBestFitness) {
-			dBestFitness = d_Iter_Fitness;
-			vCurrentBest = vGetBest();
-		}
-		mMutex.unlock();
-		if (iGenerations % I_MIGRATION_GAP == 0) {
-		
-			vector<CGene*>* pvpvBestGenes = pvpcGetTopGenes(I_BEST_TO_MIGRATE);
-			for (int i = 0; i < I_BEST_TO_MIGRATE; i++) {
-				delete vpcBestGenes.at(iSubId).at(i);
-				vpcBestGenes.at(iSubId).at(i) = pvpvBestGenes->at(i);
-			}
-			delete pvpvBestGenes;
-		}
-		vCrossMutate();
+		index++;
 	}
 }
 
 std::vector<int> CPopulation::vGetBest()
 {
-	if (B_ASYNC) {
-		return vCurrentBest;
+	if (I_SUB_POPS == 1) {
+		return  vpcSubPopulations[0]->vGetBest();
 	}
 	double dBestVal = 0.0;
 	int iBestId = 0;
@@ -217,8 +172,8 @@ std::vector<int> CPopulation::vGetBest()
 
 double CPopulation::dGetBestValue()
 {
-	if (B_ASYNC) {
-		return dBestFitness;
+	if (I_SUB_POPS == 1) {
+		return vpcSubPopulations[0]->dGetBestValue();
 	}
 	double dBestVal = 0.0;
 	for (auto pSub : vpcSubPopulations) {
@@ -230,26 +185,46 @@ double CPopulation::dGetBestValue()
 	return dBestVal;
 }
 
-void CPopulation::vLaunchAsync()
+void CPopulation::vEvalSortGenes()
 {
-	bAsyncStopped = false;
-	bKeepRunning = true;
-	int index = 0;
-	for (auto pSub : vpcSubPopulations) {
-		vptThreads.push_back(new thread(&CSubPopulation::vRunSubPop, pSub, ref(bKeepRunning), index, ref(vpcBestGenes), ref(vCurrentBest), ref(dBestFitness), ref(mMutex)));
-		index++;
+	for (int i = 0; i < I_SUB_POPS; i++) {
+		vpcSubPopulations[i]->vEvalSortGenes();
+	}
+
+}
+
+void CPopulation::vCrossMutate()
+{
+#pragma omp parallel for
+	for (int i = 0; i < I_SUB_POPS; i++) {
+		vpcSubPopulations[i]->vCrossMutate();
 	}
 }
 
-void CPopulation::vStopAsync()
+void CPopulation::vExchangeBestGenes()
 {
-	bKeepRunning = false;
-	bAsyncStopped = true;
-	for each (thread * th in vptThreads)
-	{
-		th->join();
-		cout << "hell yeahhh\n";
-		delete th;
+
+	for (int i = 0; i < I_SUB_POPS; i++) {
+#pragma omp parallel for
+		for (int j = 0; j < I_BEST_TO_MIGRATE; j++) {
+			delete vpcBestGenes[i]->at(j);
+		}
+		delete vpcBestGenes[i];
+		vpcBestGenes[i] = vpcSubPopulations[i]->pvpcGetTopGenes(I_BEST_TO_MIGRATE);
 	}
-	
+
+
+	for (int i = 0; i < I_SUB_POPS; i++) {
+		vector<CIndividual*>* pvpcGenesToMigrate = new vector<CIndividual*>(I_BEST_TO_MIGRATE);
+#pragma omp parallel for
+		for (int j = 0; j < I_BEST_TO_MIGRATE; j++) {
+			int iIndex = 0;
+			do {
+				iIndex = MyMath::dRand() * I_SUB_POPS;
+			} while (iIndex == i);
+			int iIndividual = MyMath::dRand() * I_BEST_TO_MIGRATE;
+			pvpcGenesToMigrate->at(j) = (vpcBestGenes[iIndex]->at(iIndividual));	
+		}
+		vpcSubPopulations[i]->vMigrateInto(pvpcGenesToMigrate);
+	}
 }

@@ -149,7 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Gene.cpp" />
+    <ClCompile Include="Individual.cpp" />
     <ClCompile Include="Population.cpp" />
     <ClCompile Include="Evaluator.cpp" />
     <ClCompile Include="fitness.cpp" />
@@ -162,7 +162,7 @@
     <ClCompile Include="Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Gene.h" />
+    <ClInclude Include="Individual.h" />
     <ClInclude Include="Population.h" />
     <ClInclude Include="Evaluator.h" />
     <ClInclude Include="fitness.h" />
@@ -171,7 +171,7 @@
     <ClInclude Include="NETsimulator.h" />
     <ClInclude Include="Optimizer.h" />
     <ClInclude Include="settings.h" />
-    <ClInclude Include="Stoper.h" />
+    <ClInclude Include="Executor.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Tools.h" />
   </ItemGroup>

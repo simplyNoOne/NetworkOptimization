@@ -5,7 +5,7 @@
 #include <exception>
 #include <iostream>
 #include <random>
-#include "Stoper.h"
+#include "Executor.h"
 using namespace TimeCounters;
 
 using namespace std;
@@ -37,7 +37,7 @@ void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 		//	c_time_counter.bGetTimePassed(&d_time_passed);
 		//}
 
-		c_optimizer.vRunUntil(new CStopAfterTime(240));
+		c_optimizer.vRunUntil(new CStopAfterTime(300));
 		//c_optimizer.vRunAsync(new CStopAfterTime(240));
 		//c_optimizer.vRunIteration();
 		//cout<<c_optimizer.dGetBestFitness();
