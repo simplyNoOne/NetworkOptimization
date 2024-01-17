@@ -1,22 +1,17 @@
 #pragma once
-#include <set>
+#include <atomic>
 
-template <class T>
-class CSmartPtr;
-
-
-template<class T>
 class CRefCounter
 {
 public:
-	CRefCounter<T>() { i_count = 0; }
+	CRefCounter() { iCount = 0; }
 	int iAdd() { 
-		return(++i_count); }
+		return(++iCount); }
 	int iDec() {
-		return(--i_count); };
-	int iGet() { return(i_count); }
+		return(--iCount); };
+	int iGet() { return(iCount); }
 private:
-	int i_count;
+	std::atomic<int> iCount;
 };
 
 
@@ -24,48 +19,60 @@ template <class T>
 class CSmartPtr
 {
 public:
+
+	CSmartPtr<T>() {
+		pcPointer = nullptr;
+	}
 	CSmartPtr<T>(T* pcPointer)
 	{
-		pc_pointer = pcPointer;
-		pc_counter = new CRefCounter<T>();
-		pc_counter->iAdd();
+		this->pcPointer = pcPointer;
+		pcCounter = new CRefCounter();
+		pcCounter->iAdd();
 
 	}
 
 	CSmartPtr<T> operator=(const CSmartPtr<T>& cOther) {
-		if (pc_counter->iDec() == 0)
-		{
-			delete pc_pointer;
-			delete pc_counter;
+		if (this == &cOther)
+			return *this;
+
+		if (pcPointer) {
+			if (pcCounter->iDec() == 0)
+			{
+				delete pcPointer;
+				delete pcCounter;
+			}
 		}
-		pc_pointer = cOther.pc_pointer;
-		pc_counter = cOther.pc_counter;
-		pc_counter->iAdd();
+		
+		pcPointer = cOther.pcPointer;
+		pcCounter = cOther.pcCounter;
+		pcCounter->iAdd();
 
 		return *this;
 	}
 
 	CSmartPtr<T>(const CSmartPtr& pcOther)
 	{
-		pc_pointer = pcOther.pc_pointer;
-		pc_counter = pcOther.pc_counter;
-		pc_counter->iAdd();
+		pcPointer = pcOther.pcPointer;
+		pcCounter = pcOther.pcCounter;
+		pcCounter->iAdd();
 	}
 
 
 	~CSmartPtr<T>()
 	{
-		if (pc_counter->iDec() == 0)
-		{
-			delete pc_pointer;
-			delete pc_counter;
+		if (pcPointer) {
+			if (pcCounter->iDec() == 0)
+			{
+				delete pcPointer;
+				delete pcCounter;
+			}
 		}
 	}
 
-	T& operator*() const { return(*pc_pointer); }
-	T* operator->() const { return(pc_pointer); }
+	T& operator*() const { return(*pcPointer); }
+	T* operator->() const { return(pcPointer); }
 private:
-	CRefCounter<T>* pc_counter;
-	T* pc_pointer;
+	CRefCounter* pcCounter;
+	T* pcPointer;
 };
 

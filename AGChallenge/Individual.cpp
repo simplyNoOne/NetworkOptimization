@@ -51,7 +51,7 @@ void CIndividual::vEvaluateFitness(CLFLnetEvaluator* cEvaluator)
     }
 }
 
-void CIndividual::vCrossover(CIndividual* pcParent1, CIndividual* pcParent2, CIndividual* pcChild1, CIndividual* pcChild2)
+void CIndividual::vCrossover(CSmartPtr<CIndividual> pcParent1, CSmartPtr<CIndividual> pcParent2, CSmartPtr<CIndividual> pcChild1, CSmartPtr<CIndividual> pcChild2)
 {
     int iParts = MyMath::dRand() * I_MAX_CUTS_CROSS + 1;
     int iLastCut = 0;

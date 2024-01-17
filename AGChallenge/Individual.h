@@ -24,7 +24,7 @@ public:
 		}
 	}
 	void vEvaluateFitness(CLFLnetEvaluator* cEvaluator);
-	static void vCrossover(CIndividual* pcParent1, CIndividual* pcParent2, CIndividual* pcChild1, CIndividual* pcChild2);
+	static void vCrossover(CSmartPtr<CIndividual> pcParent1, CSmartPtr<CIndividual> pcParent2, CSmartPtr<CIndividual> pcChild1, CSmartPtr<CIndividual> pcChild2);
 	void vMutate(CLFLnetEvaluator* cEv);
 	double dGetFitness() { return dFitness; }
 	std::vector<int> vGet() { return *vSolution; }

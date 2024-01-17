@@ -3,6 +3,7 @@
 #include "settings.h"
 #include <mutex>
 #include "Evaluator.h"
+#include "SmartPtr.h"
 
 class CIndividual;
 class COptimizer;
@@ -10,7 +11,7 @@ class COptimizer;
 class CSubPopulation
 {
 private:
-	vector<CIndividual*>* vpcIndividuals;
+	vector<CSmartPtr<CIndividual>>* vpcIndividuals;
 	vector<CLFLnetEvaluator*> vpcEvaluators;
 	CLFLnetEvaluator* cEv;
 	COptimizer* cOpt;
@@ -25,12 +26,12 @@ public:
 
 	std::vector<int> vGetBest();
 	double dGetBestValue();
-	std::vector<CIndividual*>* pvpcGetTopGenes(int iNum);
+	std::vector<CSmartPtr<CIndividual>>* pvpcGetTopGenes(int iNum);
 
 	void vInit();
 	void vEvalSortIndividuals();
 	void vCrossMutate();
-	void vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate);
+	void vMigrateInto(std::vector<CSmartPtr<CIndividual>>* vGenesToMigrate);
 
 private:
 	int iGetParentsId();
@@ -61,7 +62,7 @@ public:
 
 private:
 	std::vector<CSubPopulation*> vpcSubPopulations;
-	vector<vector<CIndividual*>*> vpcBestGenes;
+	vector<vector<CSmartPtr<CIndividual>>*> vpcBestGenes;
 	vector<thread*> vptThreads;
 
 	mutex mMutex;
