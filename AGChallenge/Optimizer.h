@@ -28,9 +28,16 @@ public:
 	void vRunUntil(const CExecutor* cExecutor);
 	double dGetBestFitness() { return dBestFitness; }
 
+
 	inline ~COptimizer() {
 		delete pcPopulation;
 	}
+
+	int iCurrentPopSize;
+	double dParentPenalty;
+	double dGenePenalty;
+	int iSubGrpSize;
+	int iPrevPopSize;
 
 private:
 	//throw away
@@ -42,7 +49,6 @@ private:
 	//	Population* cPopulation;
 	CPopulation* pcPopulation;
 	
-
 
 	//don't touch
 	CLFLnetEvaluator& c_evaluator;

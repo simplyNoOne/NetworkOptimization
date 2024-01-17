@@ -3,21 +3,24 @@
 #include "MyMath.h"
 #include "settings.h"
 
-CIndividual::CIndividual(CLFLnetEvaluator* cEv)
+CIndividual::CIndividual(COptimizer* cOpt, CLFLnetEvaluator* cEv)
 {
-    vSolution = new std::vector<int>();
-    vSolution->resize((size_t)cEv->iGetNumberOfBits());
+    this->cOpt = cOpt;
+    vSolution = new std::vector<int>((size_t)cEv->iGetNumberOfBits(), 0);
+    //vSolution->resize();
 
     bCalculated = false;
     dFitness = 0.;
-    for (int ii = 0; ii < vSolution->size(); ii++)
+    int iStart = MyMath::dRand() * I_GAP;
+    for (int ii = iStart; ii < vSolution->size(); ii += I_GAP)
     {
         vSolution->at(ii) = lRand(cEv->iGetNumberOfValues(ii));
     }
 }
 
-CIndividual::CIndividual()
+CIndividual::CIndividual(COptimizer* cOp)
 {
+    cOpt = cOp;
     vSolution = new std::vector<int>();
     bCalculated = false;
     dFitness = 0.;
@@ -33,6 +36,7 @@ CIndividual::CIndividual()
 */
 CIndividual::CIndividual(CIndividual* pcToCopy)
 {
+    cOpt = pcToCopy->cOpt;
     vSolution = new std::vector<int>();
     bCalculated = pcToCopy->bCalculated;
     dFitness = pcToCopy->dFitness;
@@ -75,9 +79,10 @@ void CIndividual::vMutate(CLFLnetEvaluator* cEv)
     int i = 0;
     int iMuts = 0;
     for (int i = 0; i < vSolution->size(); i++) {
-        if (MyMath::dRand() < (D_MUTATION_CHANCE)) {
+        if (MyMath::dRand() < (D_MUTATION_CHANCE + cOpt->dGenePenalty)) {
             int newVal = MyMath::dRand() * cEv->iGetNumberOfValues(i);
             vSolution->at(i) = newVal;
         }
     }
 }
+

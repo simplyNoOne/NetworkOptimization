@@ -5,18 +5,21 @@
 #include "Evaluator.h"
 
 class CIndividual;
+class COptimizer;
 
 class CSubPopulation
 {
 private:
-	vector<CIndividual*>* vpcGenes;
+	vector<CIndividual*>* vpcIndividuals;
 	vector<CLFLnetEvaluator*> vpcEvaluators;
 	CLFLnetEvaluator* cEv;
+	COptimizer* cOpt;
 
 public:
-	inline CSubPopulation(CLFLnetEvaluator& ev, int iGenes) {
+	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev, int iGenes) {
 		cEv = new CLFLnetEvaluator();
 		cEv->bConfigure(ev.sGetNetName());
+		this->cOpt = cOpt;
 	}
 	~CSubPopulation();
 
@@ -25,7 +28,7 @@ public:
 	std::vector<CIndividual*>* pvpcGetTopGenes(int iNum);
 
 	void vInit();
-	void vEvalSortGenes();
+	void vEvalSortIndividuals();
 	void vCrossMutate();
 	void vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate);
 
@@ -37,9 +40,9 @@ private:
 class CPopulation 
 {
 public: 
-	inline CPopulation(CLFLnetEvaluator& ev, int iGenes, int iNumSubs ) {
+	inline CPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev, int iGenes, int iNumSubs ) {
 		for (int i = 0; i < iNumSubs; i++) {
-			vpcSubPopulations.push_back(new CSubPopulation(ev, iGenes));
+			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev, iGenes));
 		}
 	}
 
@@ -49,10 +52,12 @@ public:
 
 	std::vector<int> vGetBest();
 	double dGetBestValue();
-	void vEvalSortGenes();
+	void vEvalSortIndividuals();
 	
 	void vCrossMutate();
 	void vExchangeBestGenes();
+
+	
 
 private:
 	std::vector<CSubPopulation*> vpcSubPopulations;

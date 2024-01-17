@@ -37,7 +37,7 @@ void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 		//	c_time_counter.bGetTimePassed(&d_time_passed);
 		//}
 
-		c_optimizer.vRunUntil(new CStopAfterTime(300));
+		c_optimizer.vRunUntil(new CStopAfterTime(I_TIME));
 		//c_optimizer.vRunAsync(new CStopAfterTime(240));
 		//c_optimizer.vRunIteration();
 		//cout<<c_optimizer.dGetBestFitness();
@@ -67,7 +67,13 @@ void main(int iArgCount, char **ppcArgValues)
 
 
 	CString  s_test;
+
 	vRunLFLExperiment("114b04");
+	//vRunLFLExperiment("162b00");
+	//vRunLFLExperiment("144d07");
+	//vRunLFLExperiment("128d08");
+	//vRunLFLExperiment("162096");
+	//vRunLFLExperiment("g120081");
 
 	/*vRunIsingSpinGlassExperiment(81, 0, i_mask_seed);
 	vRunIsingSpinGlassExperiment(81, 0, iSEED_NO_MASK);

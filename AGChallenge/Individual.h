@@ -10,10 +10,11 @@ class CIndividual
 	std::vector<int>* vSolution;
 	bool bCalculated;
 	double dFitness;
+	COptimizer* cOpt;
 
 public:
-	CIndividual(CLFLnetEvaluator* cEv);
-	CIndividual();
+	CIndividual(COptimizer* cOpt, CLFLnetEvaluator* cEv);
+	CIndividual(COptimizer* cOp);
 	//Gene(Gene&& cOriginal)noexcept;
 	CIndividual(CIndividual* pcToCopy);
 	inline ~CIndividual() {
@@ -28,5 +29,8 @@ public:
 	double dGetFitness() { return dFitness; }
 	std::vector<int> vGet() { return *vSolution; }
 
+	int iGetAtPos(int iPos) {
+		return vSolution->at(iPos);
+	}
 };
 

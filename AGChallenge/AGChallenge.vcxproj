@@ -172,6 +172,7 @@
     <ClInclude Include="Optimizer.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="Executor.h" />
+    <ClInclude Include="SmartPtr.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Tools.h" />
   </ItemGroup>
