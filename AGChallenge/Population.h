@@ -16,7 +16,7 @@ private:
 	COptimizer* cOpt;
 
 public:
-	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev, int iGenes) {
+	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev) {
 		cEv = new CLFLnetEvaluator();
 		cEv->bConfigure(ev.sGetNetName());
 		this->cOpt = cOpt;
@@ -40,9 +40,9 @@ private:
 class CPopulation 
 {
 public: 
-	inline CPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev, int iGenes, int iNumSubs ) {
-		for (int i = 0; i < iNumSubs; i++) {
-			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev, iGenes));
+	inline CPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev) {
+		for (int i = 0; i <= I_SUB_POPS; i++) {
+			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev));
 		}
 	}
 
@@ -53,13 +53,16 @@ public:
 	std::vector<int> vGetBest();
 	double dGetBestValue();
 	void vEvalSortIndividuals();
+	void vEvalSortAll();
 	
 	void vCrossMutate();
 	void vExchangeBestGenes();
+	void vGenBestFromHelper();
 
 	
 
 private:
+	//CSubPopulation* pcHelperPop;
 	std::vector<CSubPopulation*> vpcSubPopulations;
 	vector<vector<CIndividual*>*> vpcBestGenes;
 	vector<thread*> vptThreads;

@@ -81,7 +81,7 @@ void CSubPopulation::vCrossMutate()
 		CIndividual* pcP1 = vpcIndividuals->at(iGetParentsId());
 		
 		CIndividual* pcP2 = vpcIndividuals->at(iGetParentsId());
-		if (MyMath::dRand() < D_CROSSOVER_CHANCE + cOpt->dParentPenalty) {
+		if (MyMath::dRand() < D_CROSSOVER_CHANCE + cOpt->dCrossPenalty) {
 			CIndividual* pcC1 = new CIndividual(cOpt);
 			CIndividual* pcC2 = new CIndividual(cOpt);
 			CIndividual::vCrossover(pcP1, pcP2, pcC1, pcC2);
@@ -126,7 +126,6 @@ void CSubPopulation::vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate)
 		delete vpcIndividuals->at(cOpt->iPrevPopSize / 2 + iLocToMigrate + i);
 		vpcIndividuals->at(cOpt->iPrevPopSize / 2 + iLocToMigrate + i) = new CIndividual(vGenesToMigrate->at(i));
 	}
-	delete vGenesToMigrate;
 }
 
 
@@ -195,10 +194,16 @@ void CPopulation::vEvalSortIndividuals()
 
 }
 
+void CPopulation::vEvalSortAll()
+{
+	vpcSubPopulations[I_SUB_POPS]->vEvalSortIndividuals();
+	vEvalSortIndividuals();
+}
+
 void CPopulation::vCrossMutate()
 {
 #pragma omp parallel for
-	for (int i = 0; i < I_SUB_POPS; i++) {
+	for (int i = 0; i <= I_SUB_POPS; i++) {
 		vpcSubPopulations[i]->vCrossMutate();
 	}
 }
@@ -228,5 +233,18 @@ void CPopulation::vExchangeBestGenes()
 			pvpcGenesToMigrate->at(j) = (vpcBestGenes[iIndex]->at(iIndividual));	
 		}
 		vpcSubPopulations[i]->vMigrateInto(pvpcGenesToMigrate);
+		delete pvpcGenesToMigrate;
 	}
+}
+
+void CPopulation::vGenBestFromHelper()
+{
+	vector<CIndividual*>* pvpcGenesToMigrate = vpcSubPopulations[I_SUB_POPS]->pvpcGetTopGenes(I_BEST_TO_MIGRATE);
+	for (int i = 0; i < I_SUB_POPS; i++) {
+		vpcSubPopulations[i]->vMigrateInto(pvpcGenesToMigrate);
+	}
+	for (auto pcInd : *pvpcGenesToMigrate) {
+		delete pcInd;
+	}
+	delete pvpcGenesToMigrate;
 }

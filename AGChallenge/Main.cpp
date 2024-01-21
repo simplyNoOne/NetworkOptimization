@@ -68,7 +68,7 @@ void main(int iArgCount, char **ppcArgValues)
 
 	CString  s_test;
 
-	vRunLFLExperiment("114b04");
+	vRunLFLExperiment(S_CASE);
 	//vRunLFLExperiment("162b00");
 	//vRunLFLExperiment("144d07");
 	//vRunLFLExperiment("128d08");

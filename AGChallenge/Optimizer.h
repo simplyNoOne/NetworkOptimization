@@ -36,6 +36,7 @@ public:
 	int iCurrentPopSize;
 	double dParentPenalty;
 	double dGenePenalty;
+	double dCrossPenalty;
 	int iSubGrpSize;
 	int iPrevPopSize;
 
@@ -44,7 +45,6 @@ private:
 	double dBestFitness;
 	int iGenerations;
 	int iStagnation;
-	
 
 	//	Population* cPopulation;
 	CPopulation* pcPopulation;

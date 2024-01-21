@@ -27,6 +27,7 @@ public:
 			cOptimizer->vRunIteration();
 			cCounter.bGetTimePassed(&dPassed);
 			std::cout << "GEN " << iNumIters << "\t| TIME " << dPassed << "\t| " << cOptimizer->dGetBestFitness() << "\tSIZE "<< cOptimizer->iCurrentPopSize << "\tPENS " << cOptimizer->dParentPenalty <<", " << cOptimizer->dGenePenalty << endl;
+			//printf("GEN %i\t| TIME %f\t| %f\t| SIZE %i\t| PENS %f, %f\n", iNumIters, dPassed, cOptimizer->dGetBestFitness(), cOptimizer->iCurrentPopSize, cOptimizer->dParentPenalty, cOptimizer->dGenePenalty);
 		}
 	}
 };
@@ -43,14 +44,3 @@ public:
 	}
 };
 
-//class CStopAfterEvals : public CExecutor {
-//public:
-//	CStopAfterEvals(int iBound) : CExecutor(iBound) {}
-//	inline virtual void vRun(COptimizer* cOptimizer)const override {
-//		int iNumEvals = 0;
-//		while (iNumEvals < iBound / I_POP_SIZE) {
-//			cOptimizer->vRunIteration();
-//			iNumEvals++;
-//		}
-//	}
-//};
