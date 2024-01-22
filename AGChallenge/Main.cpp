@@ -38,6 +38,7 @@ void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 		//}
 
 		c_optimizer.vRunUntil(new CStopAfterTime(I_TIME));
+		cout<<c_optimizer.dGetBestFitness()<<endl;
 		//c_optimizer.vRunAsync(new CStopAfterTime(240));
 		//c_optimizer.vRunIteration();
 		//cout<<c_optimizer.dGetBestFitness();

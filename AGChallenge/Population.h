@@ -41,7 +41,7 @@ class CPopulation
 {
 public: 
 	inline CPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev) {
-		for (int i = 0; i <= I_SUB_POPS; i++) {
+		for (int i = 0; i < I_SUB_POPS + I_HELPERS; i++) {
 			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev));
 		}
 	}

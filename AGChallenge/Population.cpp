@@ -143,14 +143,15 @@ CPopulation::~CPopulation()
 
 void CPopulation::vInit()
 {
-	int index = 0;
-	for (auto pSub : vpcSubPopulations) {
-		pSub->vInit();
+	for (int index = 0; index < I_SUB_POPS; index++) {
+		vpcSubPopulations[index]->vInit();
 		vpcBestGenes.push_back(new vector<CIndividual*>());
 		for (int j = 0; j < I_BEST_TO_MIGRATE; j++) {
 			vpcBestGenes.at(index)->push_back(nullptr);
 		}
-		index++;
+	}
+	for (int index = I_SUB_POPS; index < I_SUB_POPS + I_HELPERS; index++) {
+		vpcSubPopulations[index]->vInit();
 	}
 }
 
@@ -196,14 +197,16 @@ void CPopulation::vEvalSortIndividuals()
 
 void CPopulation::vEvalSortAll()
 {
-	vpcSubPopulations[I_SUB_POPS]->vEvalSortIndividuals();
+	for (int i = I_SUB_POPS; i < I_SUB_POPS + I_HELPERS; i++) {
+		vpcSubPopulations[i]->vEvalSortIndividuals();
+	}
 	vEvalSortIndividuals();
 }
 
 void CPopulation::vCrossMutate()
 {
 #pragma omp parallel for
-	for (int i = 0; i <= I_SUB_POPS; i++) {
+	for (int i = 0; i < I_SUB_POPS + I_HELPERS; i++) {
 		vpcSubPopulations[i]->vCrossMutate();
 	}
 }
@@ -239,10 +242,11 @@ void CPopulation::vExchangeBestGenes()
 
 void CPopulation::vGenBestFromHelper()
 {
-	vector<CIndividual*>* pvpcGenesToMigrate = vpcSubPopulations[I_SUB_POPS]->pvpcGetTopGenes(I_BEST_TO_MIGRATE);
-	for (int i = 0; i < I_SUB_POPS; i++) {
-		vpcSubPopulations[i]->vMigrateInto(pvpcGenesToMigrate);
-	}
+	int iHelper = MyMath::dRand() * I_HELPERS;
+	vector<CIndividual*>* pvpcGenesToMigrate = vpcSubPopulations[I_SUB_POPS + iHelper]->pvpcGetTopGenes(I_BEST_TO_MIGRATE);
+	int iSubPop = MyMath::dRand() * I_SUB_POPS;
+	vpcSubPopulations[iSubPop]->vMigrateInto(pvpcGenesToMigrate);
+	
 	for (auto pcInd : *pvpcGenesToMigrate) {
 		delete pcInd;
 	}
