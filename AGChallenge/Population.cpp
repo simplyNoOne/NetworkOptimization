@@ -14,8 +14,6 @@ CSubPopulation::~CSubPopulation()
 	for (auto g : *vpcIndividuals)
 		delete g;
 	delete vpcIndividuals;
-	for (auto e : vpcEvaluators)
-		delete e;
 	delete cEv;
 }
 
@@ -23,7 +21,7 @@ void CSubPopulation::vEvalSortIndividuals()
 {
 #pragma omp parallel for
 	for (int i = 0; i < cOpt->iPrevPopSize; ++i) {
-		(*vpcIndividuals)[i]->vEvaluateFitness(vpcEvaluators[i]);
+		(*vpcIndividuals)[i]->vEvaluateFitness((*pvpcEvaluators)[i]);
 	}
 
 	std::sort(vpcIndividuals->begin(), vpcIndividuals->end(), [](CIndividual* a, CIndividual* b) { return a->dGetFitness() > b->dGetFitness(); });
@@ -34,18 +32,9 @@ void CSubPopulation::vInit()
 	vpcIndividuals = new std::vector<CIndividual*>(I_START_POP);
 	for (int i = 0; i < I_START_POP; i++) {
 		vpcIndividuals->at(i) = new CIndividual(cOpt, cEv);
-		vpcEvaluators.push_back(new CLFLnetEvaluator());
-	}
-	for (int i = I_START_POP; i < I_POP_SIZE; i++) {
-		vpcEvaluators.push_back(new CLFLnetEvaluator());
 	}
 
-	auto sName = cEv->sGetNetName();
-
-#pragma omp parallel for
-	for (int i = 0; i < I_POP_SIZE; ++i) {
-		vpcEvaluators[i]->bConfigure(sName);
-	}		
+		
 }
 
 
@@ -128,6 +117,12 @@ void CSubPopulation::vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate)
 	}
 }
 
+void CSubPopulation::vDoChaos(int iIndivPos, CLFLnetEvaluator* pcEvToUse)
+{
+	vpcIndividuals->at(iIndivPos)->vAddChaos(pcEvToUse);
+	vpcIndividuals->at(iIndivPos)->vEvaluateFitness(pcEvToUse);
+}
+
 
 CPopulation::~CPopulation()
 {
@@ -139,10 +134,24 @@ CPopulation::~CPopulation()
 			delete g;
 		delete vg;
 	}
+	for (auto e : *pvpcEvaluators)
+		delete e;
+	delete pvpcEvaluators;
+	delete pcEv;
 }
 
 void CPopulation::vInit()
 {
+	for (int i = 0; i < I_POP_SIZE; i++) {
+		pvpcEvaluators->push_back(new CLFLnetEvaluator());
+	}
+	auto sName = pcEv->sGetNetName();
+
+#pragma omp parallel for
+	for (int i = 0; i < I_POP_SIZE; ++i) {
+		pvpcEvaluators->at(i)->bConfigure(sName);
+	}
+
 	for (int index = 0; index < I_SUB_POPS; index++) {
 		vpcSubPopulations[index]->vInit();
 		vpcBestGenes.push_back(new vector<CIndividual*>());
@@ -213,7 +222,7 @@ void CPopulation::vCrossMutate()
 
 void CPopulation::vExchangeBestGenes()
 {
-
+	cout << "-----MIGRATION-----\n";
 	for (int i = 0; i < I_SUB_POPS; i++) {
 #pragma omp parallel for
 		for (int j = 0; j < I_BEST_TO_MIGRATE; j++) {
@@ -242,6 +251,7 @@ void CPopulation::vExchangeBestGenes()
 
 void CPopulation::vGenBestFromHelper()
 {
+	cout << "-----BEST FROM HELPER-----\n";
 	int iHelper = MyMath::dRand() * I_HELPERS;
 	vector<CIndividual*>* pvpcGenesToMigrate = vpcSubPopulations[I_SUB_POPS + iHelper]->pvpcGetTopGenes(I_BEST_TO_MIGRATE);
 	int iSubPop = MyMath::dRand() * I_SUB_POPS;
@@ -251,4 +261,35 @@ void CPopulation::vGenBestFromHelper()
 		delete pcInd;
 	}
 	delete pvpcGenesToMigrate;
+}
+
+void CPopulation::vUnleashChaos()
+{
+	cout << "----------CHAOS------------\n";
+	vector<int>vPos = vGetRandomRange();
+
+#pragma omp parallel for
+	for (int i = 0; i < I_CHAOS_COUNT; i++) {
+		int iPop = MyMath::dRand()* (I_SUB_POPS + I_HELPERS);
+		vpcSubPopulations[iPop]->vDoChaos(vPos[i], pvpcEvaluators->at(i));
+	}
+}
+
+vector<int> CPopulation::vGetRandomRange()
+{
+	int iMax = pcOpt->iPrevPopSize;
+	vector<int> list(iMax);
+	for (int i = 0; i < iMax; i++) {
+		list[i] = i;
+	}
+	vector<int> res(I_CHAOS_COUNT);
+	for (int i = 0; i < I_CHAOS_COUNT; i++) {
+		int j = i + MyMath::dRand() * (iMax - i);
+		int temp = list[i];
+		list[i] = list[j];
+		list[j] = temp;
+
+		res[i] = list[i];
+	}
+	return res;
 }

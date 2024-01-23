@@ -66,19 +66,24 @@ void COptimizer::vRunIteration()
 				dParentPenalty += D_PARENT_PUSH;
 			if (dCrossPenalty < D_MAX_CROSS_PEN)
 				dCrossPenalty += D_CROSS_PUSH;
+			
 		}
 	}
 	
 	//cout << dBestFitness << endl;
 	pcPopulation->vCrossMutate();
 
-	if (iStagnation % I_WAIT == 0) {
+	if (iStagnation != 0 && iStagnation % I_WAIT == 0) {
 		if (iStagnation % I_MIG_WAIT == 0 ) {
 			pcPopulation->vExchangeBestGenes();
 		}
 		if (iStagnation % I_HELP_WAIT == 0) {
 			pcPopulation->vGenBestFromHelper();
 		}
+		if (iStagnation % (I_HELP_WAIT + I_MIG_WAIT) == 0) {
+			pcPopulation->vUnleashChaos();
+		}
+
 	}
 	
 	if (iPrevPopSize != iCurrentPopSize) {

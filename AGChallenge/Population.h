@@ -11,15 +11,16 @@ class CSubPopulation
 {
 private:
 	vector<CIndividual*>* vpcIndividuals;
-	vector<CLFLnetEvaluator*> vpcEvaluators;
+	vector<CLFLnetEvaluator*>* pvpcEvaluators;
 	CLFLnetEvaluator* cEv;
 	COptimizer* cOpt;
 
 public:
-	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev) {
+	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev, vector<CLFLnetEvaluator*>* pvpcEvals) {
 		cEv = new CLFLnetEvaluator();
 		cEv->bConfigure(ev.sGetNetName());
 		this->cOpt = cOpt;
+		pvpcEvaluators = pvpcEvals;
 	}
 	~CSubPopulation();
 
@@ -31,6 +32,7 @@ public:
 	void vEvalSortIndividuals();
 	void vCrossMutate();
 	void vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate);
+	void vDoChaos(int iIndivPos, CLFLnetEvaluator* pcEvToUse);
 
 private:
 	int iGetParentsId();
@@ -41,8 +43,11 @@ class CPopulation
 {
 public: 
 	inline CPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev) {
+		pcEv = &ev;
+		pcOpt = cOpt;
+		pvpcEvaluators = new vector<CLFLnetEvaluator*>();
 		for (int i = 0; i < I_SUB_POPS + I_HELPERS; i++) {
-			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev));
+			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev, pvpcEvaluators));
 		}
 	}
 
@@ -58,14 +63,19 @@ public:
 	void vCrossMutate();
 	void vExchangeBestGenes();
 	void vGenBestFromHelper();
+	void vUnleashChaos();
+	vector<int> vGetRandomRange();
 
 	
 
 private:
 	//CSubPopulation* pcHelperPop;
+	vector<CLFLnetEvaluator*>* pvpcEvaluators;
 	std::vector<CSubPopulation*> vpcSubPopulations;
 	vector<vector<CIndividual*>*> vpcBestGenes;
 	vector<thread*> vptThreads;
+	CLFLnetEvaluator* pcEv;
+	COptimizer* pcOpt;
 
 	mutex mMutex;
 	vector<int> vCurrentBest;

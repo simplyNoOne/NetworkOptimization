@@ -26,14 +26,7 @@ CIndividual::CIndividual(COptimizer* cOp)
     dFitness = 0.;
 }
 
-/*Gene::Gene(Gene&& cOriginal) noexcept
-{
-    bCalculated = cOriginal.bCalculated;
-    dFitness = cOriginal.dFitness;
-    vSolution = cOriginal.vSolution;
-    cOriginal.vSolution = nullptr;
-}
-*/
+
 CIndividual::CIndividual(CIndividual* pcToCopy)
 {
     cOpt = pcToCopy->cOpt;
@@ -76,6 +69,7 @@ void CIndividual::vCrossover(CIndividual* pcParent1, CIndividual* pcParent2, CIn
 
 void CIndividual::vMutate(CLFLnetEvaluator* cEv)
 {
+    bCalculated = false;
     int i = 0;
     int iMuts = 0;
     for (int i = 0; i < vSolution->size(); i++) {
@@ -84,5 +78,17 @@ void CIndividual::vMutate(CLFLnetEvaluator* cEv)
             vSolution->at(i) = newVal;
         }
     }
+}
+
+void CIndividual::vAddChaos(CLFLnetEvaluator* pcEv)
+{
+    bCalculated = false;
+    int iNumGenesToMod = MyMath::dRand() * 300;
+    int iBound = pcEv->iGetNumberOfBits();
+    for (int i = 0; i < iNumGenesToMod; i++) {
+        int iPos = dRand() * iBound;
+        vSolution->at(iPos) = pcEv->iGetNumberOfValues(iPos) * dRand();
+    }
+
 }
 

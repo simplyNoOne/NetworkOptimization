@@ -17,6 +17,7 @@ public:
 	CIndividual(COptimizer* cOp);
 	//Gene(Gene&& cOriginal)noexcept;
 	CIndividual(CIndividual* pcToCopy);
+	
 	inline ~CIndividual() {
 		if (vSolution != nullptr)
 		{
@@ -28,6 +29,7 @@ public:
 	void vMutate(CLFLnetEvaluator* cEv);
 	double dGetFitness() { return dFitness; }
 	std::vector<int> vGet() { return *vSolution; }
+	void vAddChaos(CLFLnetEvaluator* pcEv);
 
 	int iGetAtPos(int iPos) {
 		return vSolution->at(iPos);
