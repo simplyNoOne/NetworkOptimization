@@ -68,7 +68,6 @@ void CSubPopulation::vCrossMutate()
 		
 		
 		CIndividual* pcP1 = vpcIndividuals->at(iGetParentsId());
-		
 		CIndividual* pcP2 = vpcIndividuals->at(iGetParentsId());
 		if (MyMath::dRand() < D_CROSSOVER_CHANCE + cOpt->dCrossPenalty) {
 			CIndividual* pcC1 = new CIndividual(cOpt);
@@ -78,8 +77,15 @@ void CSubPopulation::vCrossMutate()
 			pcC1->vMutate(cEv);
 			pcC2->vMutate(cEv);
 
+			pcC2->vEvaluateFitness(cEv);
+			if (pcP1->dGetFitness() > pcC2->dGetFitness()) {
+				pvpcNewPop->push_back(new CIndividual(pcP1));
+				delete pcC2;
+			}
+			else {
+				pvpcNewPop->push_back((pcC2));
+			}
 			pvpcNewPop->push_back((pcC1));
-			pvpcNewPop->push_back((pcC2));
 		}
 		else {
 			if (MyMath::dRand() < (D_PARENT_MUTATION + cOpt->dParentPenalty)) {
@@ -107,11 +113,11 @@ std::vector<CIndividual*>* CSubPopulation::pvpcGetTopGenes(int iNum)
 	return vToRet;
 }
 
-void CSubPopulation::vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate)
+void CSubPopulation::vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate, int iNum)
 {
-	int iLocToMigrate = MyMath::dRand() * (cOpt->iPrevPopSize / 2 - I_BEST_TO_MIGRATE - 1);
+	int iLocToMigrate = MyMath::dRand() * (cOpt->iPrevPopSize / 2 - iNum - 1);
 #pragma omp parallel for
-	for (int i = 0; i < I_BEST_TO_MIGRATE; i++) {
+	for (int i = 0; i < iNum; i++) {
 		delete vpcIndividuals->at(cOpt->iPrevPopSize / 2 + iLocToMigrate + i);
 		vpcIndividuals->at(cOpt->iPrevPopSize / 2 + iLocToMigrate + i) = new CIndividual(vGenesToMigrate->at(i));
 	}
@@ -244,7 +250,7 @@ void CPopulation::vExchangeBestGenes()
 			int iIndividual = MyMath::dRand() * I_BEST_TO_MIGRATE;
 			pvpcGenesToMigrate->at(j) = (vpcBestGenes[iIndex]->at(iIndividual));	
 		}
-		vpcSubPopulations[i]->vMigrateInto(pvpcGenesToMigrate);
+		vpcSubPopulations[i]->vMigrateInto(pvpcGenesToMigrate, I_BEST_TO_MIGRATE);
 		delete pvpcGenesToMigrate;
 	}
 }
@@ -253,9 +259,9 @@ void CPopulation::vGenBestFromHelper()
 {
 	cout << "-----BEST FROM HELPER-----\n";
 	int iHelper = MyMath::dRand() * I_HELPERS;
-	vector<CIndividual*>* pvpcGenesToMigrate = vpcSubPopulations[I_SUB_POPS + iHelper]->pvpcGetTopGenes(I_BEST_TO_MIGRATE);
+	vector<CIndividual*>* pvpcGenesToMigrate = vpcSubPopulations[I_SUB_POPS + iHelper]->pvpcGetTopGenes(I_BEST_TO_MIGRATE/2);
 	int iSubPop = MyMath::dRand() * I_SUB_POPS;
-	vpcSubPopulations[iSubPop]->vMigrateInto(pvpcGenesToMigrate);
+	vpcSubPopulations[iSubPop]->vMigrateInto(pvpcGenesToMigrate, I_BEST_TO_MIGRATE / 2);
 	
 	for (auto pcInd : *pvpcGenesToMigrate) {
 		delete pcInd;

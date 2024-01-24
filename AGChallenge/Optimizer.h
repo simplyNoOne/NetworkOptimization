@@ -33,6 +33,8 @@ public:
 		delete pcPopulation;
 	}
 
+	void vGetNewRandParams();
+
 	int iCurrentPopSize;
 	double dParentPenalty;
 	double dGenePenalty;

@@ -60,20 +60,22 @@ void COptimizer::vRunIteration()
 	else{
 		iStagnation++;
 		if (iStagnation % I_WAIT == 0) {
-			if(dGenePenalty < D_MAX_GENE_PEN)
+			/*if(dGenePenalty < D_MAX_GENE_PEN)
 				dGenePenalty += D_GENE_PUSH;
 			if(dParentPenalty < D_MAX_PARENT_PEN)
 				dParentPenalty += D_PARENT_PUSH;
 			if (dCrossPenalty < D_MAX_CROSS_PEN)
-				dCrossPenalty += D_CROSS_PUSH;
-			
+				dCrossPenalty += D_CROSS_PUSH;*/
+			vGetNewRandParams();
 		}
 	}
 	
 	//cout << dBestFitness << endl;
+	//bsack here
 	pcPopulation->vCrossMutate();
 
 	if (iStagnation != 0 && iStagnation % I_WAIT == 0) {
+		pcPopulation->vEvalSortAll();
 		if (iStagnation % I_MIG_WAIT == 0 ) {
 			pcPopulation->vExchangeBestGenes();
 		}
@@ -86,6 +88,8 @@ void COptimizer::vRunIteration()
 
 	}
 	
+	
+
 	if (iPrevPopSize != iCurrentPopSize) {
 		iSubGrpSize = iCurrentPopSize / I_PARENTS_SUBGRPS;
 		iPrevPopSize += I_POP_STEP;
@@ -98,6 +102,34 @@ void COptimizer::vRunIteration()
 void COptimizer::vRunUntil(const CExecutor* cExecutor)
 {
 	cExecutor->vRun(this);
+}
+
+void COptimizer::vGetNewRandParams()
+{
+	long seed = MyMath::lRand(899'999'999) + 100'000'000;
+	std::default_random_engine generator(seed);
+	std::normal_distribution<double> distribution1(D_PARENT_PEN_MEAN, D_PARENT_PEN_DEV);	
+	dParentPenalty = distribution1(generator);
+	
+	if(MyMath::dRand() > 0.5) {
+		dParentPenalty *= -1;
+	}
+
+	std::normal_distribution<double> distribution2(D_CROSS_PEN_MEAN, D_CROSS_PEN_DEV);
+	dCrossPenalty = distribution2(generator);
+
+	if (MyMath::dRand() > 0.5) {
+		dCrossPenalty *= -1;
+	}
+
+	std::normal_distribution<double> distribution3(D_GENE_PEN_MEAN, D_GENE_PEN_DEV);
+	dGenePenalty = distribution3(generator);
+
+	if (MyMath::dRand() > 0.5) {
+		dGenePenalty *= -1;
+	}
+
+	
 }
 
 

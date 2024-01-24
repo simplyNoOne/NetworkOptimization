@@ -31,7 +31,7 @@ public:
 	void vInit();
 	void vEvalSortIndividuals();
 	void vCrossMutate();
-	void vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate);
+	void vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate, int iNum);
 	void vDoChaos(int iIndivPos, CLFLnetEvaluator* pcEvToUse);
 
 private:
