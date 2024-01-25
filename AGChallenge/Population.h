@@ -76,11 +76,9 @@ private:
 	vector<CLFLnetEvaluator*>* pvpcEvaluators;
 	std::vector<CSubPopulation*> vpcSubPopulations;
 	vector<vector<CIndividual*>*> vpcBestGenes;
-	vector<thread*> vptThreads;
 	CLFLnetEvaluator* pcEv;
 	COptimizer* pcOpt;
 
-	mutex mMutex;
 	vector<int> vCurrentBest;
 	double dBestFitness;
 

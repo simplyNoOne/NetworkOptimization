@@ -30,6 +30,7 @@ public:
 	double dGetFitness() { return dFitness; }
 	std::vector<int> vGet() { return *vSolution; }
 	void vAddChaos(CLFLnetEvaluator* pcEv);
+	void vClearSol() { vSolution->clear(); }
 
 	int iGetAtPos(int iPos) {
 		return vSolution->at(iPos);

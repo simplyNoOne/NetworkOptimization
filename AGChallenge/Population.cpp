@@ -87,12 +87,31 @@ void CSubPopulation::vCrossMutate()
 		if (MyMath::dRand() < iId * D_CROSS_POP_SHIFT + D_CROSSOVER_CHANCE + cOpt->dCrossPenalty) {
 			CIndividual* pcC1 = new CIndividual(cOpt);
 			CIndividual* pcC2 = new CIndividual(cOpt);
-			CIndividual::vCrossover(pcP1, pcP2, pcC1, pcC2);
-			
-			pcC1->vMutate(cEv);
-			pcC2->vMutate(cEv);
 
-			pcC2->vEvaluateFitness(cEv);
+
+			//CIndividual::vCrossover(pcP1, pcP2, pcC1, pcC2);
+			//
+			//pcC1->vMutate(cEv);
+			//pcC2->vMutate(cEv);
+			//pcC2->vEvaluateFitness(cEv);
+			
+
+			int iTries = 0;
+			do {
+				pcC1->vClearSol();
+				pcC2->vClearSol();
+
+				CIndividual::vCrossover(pcP1, pcP2, pcC1, pcC2);
+
+				pcC1->vMutate(cEv);
+				pcC2->vMutate(cEv);
+
+				pcC1->vEvaluateFitness(cEv);
+				pcC2->vEvaluateFitness(cEv);
+
+				iTries++;
+			} while (iTries < 3 && (pcC1->dGetFitness() < pcP2->dGetFitness() && pcC2->dGetFitness() < pcP2->dGetFitness()));
+
 			if (pcP1->dGetFitness() > pcC2->dGetFitness()) {
 				pvpcNewPop->push_back(new CIndividual(pcP1));
 				pvpcNewPop->at(pvpcNewPop->size() - 1)->vMutate(cEv);
@@ -160,7 +179,7 @@ CPopulation::~CPopulation()
 	for (auto e : *pvpcEvaluators)
 		delete e;
 	delete pvpcEvaluators;
-	delete pcEv;
+
 }
 
 void CPopulation::vInit()

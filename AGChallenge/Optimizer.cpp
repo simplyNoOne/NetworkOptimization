@@ -88,7 +88,6 @@ void COptimizer::vRunIteration()
 
 	}
 	
-	
 
 	if (iPrevPopSize != iCurrentPopSize) {
 		iSubGrpSize = iCurrentPopSize / I_PARENTS_SUBGRPS;
@@ -124,10 +123,6 @@ void COptimizer::vGetNewRandParams()
 
 	std::normal_distribution<double> distribution3(D_GENE_PEN_MEAN, D_GENE_PEN_DEV);
 	dGenePenalty = distribution3(generator);
-
-	if (MyMath::dRand() > 0.5) {
-		dGenePenalty *= -1;
-	}
 
 	
 }
