@@ -29,15 +29,18 @@ void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 
 		c_time_counter.bGetTimePassed(&d_time_passed);
 
-		//while (d_time_passed <= dMAX_TIME)
-		//{
-		//	c_optimizer.vRunIteration();
-		//	c_optimizer.pvGetCurrentBest();
+		while (d_time_passed <= dMAX_TIME)
+		{
+		
+			c_optimizer.vRunIteration();
+			c_optimizer.pvGetCurrentBest();
+			std::cout << "GEN " << c_optimizer.iGetGens() << "\t| TIME " << d_time_passed << "\t| " << c_optimizer.dGetBestFitness() << "\tSIZE " << c_optimizer.iCurrentPopSize << "\tPENS " << c_optimizer.dParentPenalty << ", " << c_optimizer.dGenePenalty << ", " << c_optimizer.dCrossPenalty << endl;
 
-		//	c_time_counter.bGetTimePassed(&d_time_passed);
-		//}
 
-		c_optimizer.vRunUntil(new CStopAfterTime(I_TIME));
+			c_time_counter.bGetTimePassed(&d_time_passed);
+		}
+
+		//c_optimizer.vRunUntil(new CStopAfterTime(I_TIME));
 		cout<<c_optimizer.dGetBestFitness()<<endl;
 		//c_optimizer.vRunAsync(new CStopAfterTime(240));
 		//c_optimizer.vRunIteration();

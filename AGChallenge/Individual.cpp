@@ -83,7 +83,7 @@ void CIndividual::vMutate(CLFLnetEvaluator* cEv)
 void CIndividual::vAddChaos(CLFLnetEvaluator* pcEv)
 {
     bCalculated = false;
-    int iNumGenesToMod = MyMath::dRand() * 300;
+    int iNumGenesToMod = MyMath::dRand() * I_CHAOS_GENES;
     int iBound = pcEv->iGetNumberOfBits();
     for (int i = 0; i < iNumGenesToMod; i++) {
         int iPos = dRand() * iBound;

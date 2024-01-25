@@ -42,6 +42,8 @@ public:
 	int iSubGrpSize;
 	int iPrevPopSize;
 
+	int iGetGens() { return iGenerations; }
+
 private:
 	//throw away
 	double dBestFitness;

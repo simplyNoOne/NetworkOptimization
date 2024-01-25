@@ -75,14 +75,14 @@ void COptimizer::vRunIteration()
 	pcPopulation->vCrossMutate();
 
 	if (iStagnation != 0 && iStagnation % I_WAIT == 0) {
-		pcPopulation->vEvalSortAll();
+		pcPopulation->vEvalSortIndividuals();
 		if (iStagnation % I_MIG_WAIT == 0 ) {
 			pcPopulation->vExchangeBestGenes();
 		}
-		if (iStagnation % I_HELP_WAIT == 0) {
+		/*if (iStagnation % I_HELP_WAIT == 0) {
 			pcPopulation->vGenBestFromHelper();
-		}
-		if (iStagnation % (I_HELP_WAIT + I_MIG_WAIT) == 0) {
+		}*/
+		if (iStagnation % ( I_CHAOS_WAIT) == 0) {
 			pcPopulation->vUnleashChaos();
 		}
 

@@ -8,7 +8,6 @@
 
 
 
-
 CSubPopulation::~CSubPopulation()
 {
 	for (auto g : *vpcIndividuals)
@@ -48,7 +47,16 @@ double CSubPopulation::dGetBestValue()
 	return vpcIndividuals->at(0)->dGetFitness();
 }
 
-int CSubPopulation::iGetParentsId() {
+int CSubPopulation::iGetParentsId2() {
+	int iPos1 = MyMath::dRand() * (cOpt->iPrevPopSize);
+	int iPos2 = MyMath::dRand() * (cOpt->iPrevPopSize);
+	if (vpcIndividuals->at(iPos1)->dGetFitness() > vpcIndividuals->at(iPos2)->dGetFitness()) {
+		return iPos1;
+	}
+	return iPos2;
+}
+
+int CSubPopulation::iGetParentsId1() {
 	int iGrpId = I_PARENTS_SUBGRPS - 1;
 	int iShift = I_OPTIONS * MyMath::dRand();
 	for (int i = 0, j = 2; i < iShift; i += j, j++) {
@@ -65,11 +73,18 @@ void CSubPopulation::vCrossMutate()
 	
 	std::vector<CIndividual*>* pvpcNewPop = new std::vector<CIndividual*>();
 	while (iNewPopSize < cOpt->iCurrentPopSize) {
+		CIndividual* pcP1;
+		CIndividual* pcP2;
+		if (cOpt->iGetGens() % I_ALT_PARENT_CHOOSING == 0) {
+			pcP1 = vpcIndividuals->at(iGetParentsId2());
+			pcP2 = vpcIndividuals->at(iGetParentsId2());
+		}
+		else {
+			pcP1 = vpcIndividuals->at(iGetParentsId1());
+			pcP2 = vpcIndividuals->at(iGetParentsId1());
+		}
 		
-		
-		CIndividual* pcP1 = vpcIndividuals->at(iGetParentsId());
-		CIndividual* pcP2 = vpcIndividuals->at(iGetParentsId());
-		if (MyMath::dRand() < D_CROSSOVER_CHANCE + cOpt->dCrossPenalty) {
+		if (MyMath::dRand() < iId * D_CROSS_POP_SHIFT + D_CROSSOVER_CHANCE + cOpt->dCrossPenalty) {
 			CIndividual* pcC1 = new CIndividual(cOpt);
 			CIndividual* pcC2 = new CIndividual(cOpt);
 			CIndividual::vCrossover(pcP1, pcP2, pcC1, pcC2);
@@ -80,15 +95,17 @@ void CSubPopulation::vCrossMutate()
 			pcC2->vEvaluateFitness(cEv);
 			if (pcP1->dGetFitness() > pcC2->dGetFitness()) {
 				pvpcNewPop->push_back(new CIndividual(pcP1));
+				pvpcNewPop->at(pvpcNewPop->size() - 1)->vMutate(cEv);
 				delete pcC2;
 			}
 			else {
 				pvpcNewPop->push_back((pcC2));
 			}
 			pvpcNewPop->push_back((pcC1));
+			//pvpcNewPop->push_back((pcC2));
 		}
 		else {
-			if (MyMath::dRand() < (D_PARENT_MUTATION + cOpt->dParentPenalty)) {
+			if (MyMath::dRand() < (iId * D_PAR_POP_SHIFT + D_PARENT_MUTATION + cOpt->dParentPenalty)) {
 				pcP1->vMutate(cEv);
 				pcP2->vMutate(cEv);
 			}

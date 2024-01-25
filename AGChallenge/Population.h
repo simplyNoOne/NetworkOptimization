@@ -14,12 +14,14 @@ private:
 	vector<CLFLnetEvaluator*>* pvpcEvaluators;
 	CLFLnetEvaluator* cEv;
 	COptimizer* cOpt;
+	int iId;
 
 public:
-	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev, vector<CLFLnetEvaluator*>* pvpcEvals) {
+	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev, vector<CLFLnetEvaluator*>* pvpcEvals, int id) {
 		cEv = new CLFLnetEvaluator();
 		cEv->bConfigure(ev.sGetNetName());
 		this->cOpt = cOpt;
+		iId = id;
 		pvpcEvaluators = pvpcEvals;
 	}
 	~CSubPopulation();
@@ -35,7 +37,8 @@ public:
 	void vDoChaos(int iIndivPos, CLFLnetEvaluator* pcEvToUse);
 
 private:
-	int iGetParentsId();
+	int iGetParentsId1();
+	int iGetParentsId2();
 	
 };
 
@@ -47,7 +50,7 @@ public:
 		pcOpt = cOpt;
 		pvpcEvaluators = new vector<CLFLnetEvaluator*>();
 		for (int i = 0; i < I_SUB_POPS + I_HELPERS; i++) {
-			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev, pvpcEvaluators));
+			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev, pvpcEvaluators, i));
 		}
 	}
 
