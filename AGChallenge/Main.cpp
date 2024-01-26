@@ -40,7 +40,7 @@ void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 		
 			c_optimizer.vRunIteration();
 			sol = c_optimizer.pvGetCurrentBest();
-			found = c_optimizer.dGetBestFitness();
+			found = (c_optimizer.dGetBestFitness() == 1);
 			std::cout << "GEN " << c_optimizer.iGetGens() << "\t| TIME " << d_time_passed << "\t| " << c_optimizer.dGetBestFitness() << "\t| SIZE " << c_optimizer.iCurrentPopSize << "\tPENS " << c_optimizer.dParentPenalty << ", " << c_optimizer.dGenePenalty << ", " << c_optimizer.dCrossPenalty << endl;
 
 
