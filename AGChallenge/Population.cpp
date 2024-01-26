@@ -69,6 +69,34 @@ int CSubPopulation::iGetParentsId2() {
 	return iPos2;
 }
 
+void CSubPopulation::vOrder99()
+{
+	double dPrevFit = 0.0;
+	double dCurrentFit;
+	int iCloneCounter = 0;
+	vector<int> vMurderSpots;
+
+	for (int i = 0; i < cOpt->iPrevPopSize; i++) {
+		dCurrentFit = vpcIndividuals->at(i)->dGetFitness();
+		if (dCurrentFit != dPrevFit) {
+			dPrevFit = dCurrentFit;
+			iCloneCounter = 0;
+		}
+		else {
+			iCloneCounter++;
+			if (iCloneCounter > I_CLONE_TH) {
+				vMurderSpots.push_back(i);
+			}
+		}
+	}
+	cout << "guys to murder: " << vMurderSpots.size() << endl;
+#pragma omp parallel for
+	for (int i = 0; i < vMurderSpots.size(); i++) {
+		vpcIndividuals->at(vMurderSpots[i])->vMutate(pvpcEvaluators->at(i));
+	}
+
+}
+
 int CSubPopulation::iGetParentsId1() {
 	int iGrpId = I_PARENTS_SUBGRPS - 1;
 	int iShift = I_OPTIONS * MyMath::dRand();
@@ -362,4 +390,12 @@ vector<int> CPopulation::vGetRandomRange()
 		res[i] = list[i];
 	}
 	return res;
+}
+
+void CPopulation::vExterminateClones()
+{
+	cout << "-----------ORDER 99\n";
+	for (int i = 0; i < I_SUB_POPS + I_HELPERS; i++) {
+		vpcSubPopulations[i]->vOrder99();
+	}
 }

@@ -47,6 +47,10 @@ void COptimizer::vRunIteration()
 		pcPopulation->vGenBestFromHelper();
 		pcPopulation->vEvalSortIndividuals();
 	}
+	if (iGenerations % I_KILL_WAIT == 0) {
+		pcPopulation->vExterminateClones();
+		pcPopulation->vEvalSortAll();
+	}
 	
 	double dIterFitness = pcPopulation->dGetBestValue();
 	if (dIterFitness > dBestFitness) {
@@ -61,6 +65,10 @@ void COptimizer::vRunIteration()
 		iStagnation++;
 		if (iStagnation % I_WAIT == 0) {
 			vGetNewRandParams();
+			if (iStagnation % I_KILL_STAG_WAIT == 0) {
+				pcPopulation->vExterminateClones();
+				pcPopulation->vEvalSortAll();
+			}
 		}
 	}
 	

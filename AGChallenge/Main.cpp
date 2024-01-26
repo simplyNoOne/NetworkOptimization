@@ -6,12 +6,16 @@
 #include <iostream>
 #include <random>
 #include "Executor.h"
+
+//
+#include <sstream>
 using namespace TimeCounters;
 
 using namespace std;
 
 #define dMAX_TIME 20 * 60
 
+stringstream res("Results:\n");
 
 void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 {
@@ -29,11 +33,14 @@ void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 
 		c_time_counter.bGetTimePassed(&d_time_passed);
 
-		while (d_time_passed <= I_TIME)
+		vector<int>* sol;
+		bool found = false;
+		while (!found && d_time_passed <= I_TIME)
 		{
 		
 			c_optimizer.vRunIteration();
-			c_optimizer.pvGetCurrentBest();
+			sol = c_optimizer.pvGetCurrentBest();
+			found = c_optimizer.dGetBestFitness();
 			std::cout << "GEN " << c_optimizer.iGetGens() << "\t| TIME " << d_time_passed << "\t| " << c_optimizer.dGetBestFitness() << "\t| SIZE " << c_optimizer.iCurrentPopSize << "\tPENS " << c_optimizer.dParentPenalty << ", " << c_optimizer.dGenePenalty << ", " << c_optimizer.dCrossPenalty << endl;
 
 
@@ -41,7 +48,7 @@ void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 		}
 
 		//c_optimizer.vRunUntil(new CStopAfterTime(I_TIME));
-		cout<<c_optimizer.dGetBestFitness()<<endl;
+		res << cConfiguredEvaluator.dEvaluate(sol)<< "\n";
 		//cout<<c_optimizer.dGetBestFitness();
 	}//try
 	catch (exception &c_exception)
@@ -70,7 +77,13 @@ void main(int iArgCount, char **ppcArgValues)
 
 	CString  s_test;
 
-	vRunLFLExperiment(S_CASE);
+	//vRunLFLExperiment(S_CASE);
+	vRunLFLExperiment("128b03");
+	vRunLFLExperiment("128d08");
+	vRunLFLExperiment("144b00");
+	vRunLFLExperiment("162b04");
+
+	cout << res.str();
 	//vRunLFLExperiment("162b00");
 	//vRunLFLExperiment("144d07");
 	//vRunLFLExperiment("128d08");

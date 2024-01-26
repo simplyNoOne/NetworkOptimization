@@ -35,8 +35,11 @@ public:
 	void vInit();
 	void vEvalSortIndividuals();
 	void vCrossMutate();
-	void vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate, int iNum);
+	void vMigrateInto(std::vector<CIndividual*>* vIndivsToMigrate, int iNum);
 	void vDoChaos(int iIndivPos, CLFLnetEvaluator* pcEvToUse);
+	void vOrder99();		//kill the clones
+	//cuz hahah, order #66 - kill the Jedi, and this is the reverse, oh wow, look at me... I'm so funny...
+
 
 private:
 	int iGetParentsId1();
@@ -69,6 +72,7 @@ public:
 	void vExchangeBestGenes();
 	void vGenBestFromHelper();
 	void vUnleashChaos();
+	void vExterminateClones();
 	vector<int> vGetRandomRange();
 
 	

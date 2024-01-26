@@ -69,9 +69,9 @@ void CIndividual::vCrossover(CIndividual* pcParent1, CIndividual* pcParent2, CIn
 
 void CIndividual::vMutate(CLFLnetEvaluator* cEv)
 {
-    bCalculated = false;
     for (int i = 0; i < vSolution->size(); i++) {
         if (MyMath::dRand() < (D_MUTATION_CHANCE + cOpt->dGenePenalty)) {
+            bCalculated = false;
             int newVal = MyMath::dRand() * cEv->iGetNumberOfValues(i);
             vSolution->at(i) = newVal;
         }
