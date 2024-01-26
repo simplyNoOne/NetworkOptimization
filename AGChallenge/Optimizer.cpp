@@ -35,7 +35,7 @@ void COptimizer::vInitialize()
 void COptimizer::vRunIteration()
 {
 	iGenerations++;
-	if (iGenerations % I_POP_INCR == 0 && (iCurrentPopSize + I_POP_STEP) <= I_POP_SIZE) {
+	if (iGenerations % I_POP_INCR_INTERVAL == 0 && (iCurrentPopSize + I_POP_STEP) <= I_POP_SIZE) {
 		iCurrentPopSize += I_POP_STEP;
 	}
 	pcPopulation->vEvalSortAll();
@@ -60,12 +60,6 @@ void COptimizer::vRunIteration()
 	else{
 		iStagnation++;
 		if (iStagnation % I_WAIT == 0) {
-			/*if(dGenePenalty < D_MAX_GENE_PEN)
-				dGenePenalty += D_GENE_PUSH;
-			if(dParentPenalty < D_MAX_PARENT_PEN)
-				dParentPenalty += D_PARENT_PUSH;
-			if (dCrossPenalty < D_MAX_CROSS_PEN)
-				dCrossPenalty += D_CROSS_PUSH;*/
 			vGetNewRandParams();
 		}
 	}
@@ -79,13 +73,9 @@ void COptimizer::vRunIteration()
 		if (iStagnation % I_MIG_WAIT == 0 ) {
 			pcPopulation->vExchangeBestGenes();
 		}
-		/*if (iStagnation % I_HELP_WAIT == 0) {
-			pcPopulation->vGenBestFromHelper();
-		}*/
 		if (iStagnation % ( I_CHAOS_WAIT) == 0) {
 			pcPopulation->vUnleashChaos();
 		}
-
 	}
 	
 
@@ -93,7 +83,6 @@ void COptimizer::vRunIteration()
 		iSubGrpSize = iCurrentPopSize / I_PARENTS_SUBGRPS;
 		iPrevPopSize += I_POP_STEP;
 	}
-		
 	
 }
 
@@ -124,7 +113,6 @@ void COptimizer::vGetNewRandParams()
 	std::normal_distribution<double> distribution3(D_GENE_PEN_MEAN, D_GENE_PEN_DEV);
 	dGenePenalty = distribution3(generator);
 
-	
 }
 
 

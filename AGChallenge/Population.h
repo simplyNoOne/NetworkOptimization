@@ -15,6 +15,7 @@ private:
 	CLFLnetEvaluator* cEv;
 	COptimizer* cOpt;
 	int iId;
+	CIndividual* pcDaBest;
 
 public:
 	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev, vector<CLFLnetEvaluator*>* pvpcEvals, int id) {
@@ -23,6 +24,7 @@ public:
 		this->cOpt = cOpt;
 		iId = id;
 		pvpcEvaluators = pvpcEvals;
+		pcDaBest = nullptr;
 	}
 	~CSubPopulation();
 

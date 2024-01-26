@@ -43,7 +43,7 @@ public:
 	int iPrevPopSize;
 
 	int iGetGens() { return iGenerations; }
-
+	int iGetStagnation() { return iStagnation; }
 private:
 	//throw away
 	double dBestFitness;
