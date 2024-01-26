@@ -1,7 +1,6 @@
 #pragma once
 #include "Optimizer.h"
 #include "Timer.h"
-#include <iostream>
 
 using namespace TimeCounters;
 
@@ -26,8 +25,7 @@ public:
 			iNumIters++;
 			cOptimizer->vRunIteration();
 			cCounter.bGetTimePassed(&dPassed);
-			std::cout << "GEN " << iNumIters << "\t| TIME " << dPassed << "\t| " << cOptimizer->dGetBestFitness() << "\tSIZE "<< cOptimizer->iCurrentPopSize << "\tPENS " << cOptimizer->dParentPenalty <<", " << cOptimizer->dGenePenalty << endl;
-			//printf("GEN %i\t| TIME %f\t| %f\t| SIZE %i\t| PENS %f, %f\n", iNumIters, dPassed, cOptimizer->dGetBestFitness(), cOptimizer->iCurrentPopSize, cOptimizer->dParentPenalty, cOptimizer->dGenePenalty);
+			//std::cout << "GEN " << iNumIters << "\t| TIME " << dPassed << "\t| " << cOptimizer->dGetBestFitness() << "\tSIZE "<< cOptimizer->iCurrentPopSize << "\tPENS " << cOptimizer->dParentPenalty <<", " << cOptimizer->dGenePenalty << ", " << cOptimizer->dCrossPenalty << endl;
 		}
 	}
 };

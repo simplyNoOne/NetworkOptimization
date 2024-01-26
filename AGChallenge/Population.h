@@ -11,15 +11,20 @@ class CSubPopulation
 {
 private:
 	vector<CIndividual*>* vpcIndividuals;
-	vector<CLFLnetEvaluator*> vpcEvaluators;
+	vector<CLFLnetEvaluator*>* pvpcEvaluators;
 	CLFLnetEvaluator* cEv;
 	COptimizer* cOpt;
+	int iId;
+	CIndividual* pcDaBest;
 
 public:
-	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev) {
+	inline CSubPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev, vector<CLFLnetEvaluator*>* pvpcEvals, int id) {
 		cEv = new CLFLnetEvaluator();
 		cEv->bConfigure(ev.sGetNetName());
 		this->cOpt = cOpt;
+		iId = id;
+		pvpcEvaluators = pvpcEvals;
+		pcDaBest = nullptr;
 	}
 	~CSubPopulation();
 
@@ -30,10 +35,15 @@ public:
 	void vInit();
 	void vEvalSortIndividuals();
 	void vCrossMutate();
-	void vMigrateInto(std::vector<CIndividual*>* vGenesToMigrate);
+	void vMigrateInto(std::vector<CIndividual*>* vIndivsToMigrate, int iNum);
+	void vDoChaos(int iIndivPos, CLFLnetEvaluator* pcEvToUse);
+	void vOrder99();		//kill the clones
+	//cuz hahah, order #66 - kill the Jedi, and this is the reverse, oh wow, look at me... I'm so funny...
+
 
 private:
-	int iGetParentsId();
+	int iGetParentsId1();
+	int iGetParentsId2();
 	
 };
 
@@ -41,8 +51,11 @@ class CPopulation
 {
 public: 
 	inline CPopulation(COptimizer* cOpt, CLFLnetEvaluator& ev) {
-		for (int i = 0; i <= I_SUB_POPS; i++) {
-			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev));
+		pcEv = &ev;
+		pcOpt = cOpt;
+		pvpcEvaluators = new vector<CLFLnetEvaluator*>();
+		for (int i = 0; i < I_SUB_POPS + I_HELPERS; i++) {
+			vpcSubPopulations.push_back(new CSubPopulation(cOpt, ev, pvpcEvaluators, i));
 		}
 	}
 
@@ -58,16 +71,20 @@ public:
 	void vCrossMutate();
 	void vExchangeBestGenes();
 	void vGenBestFromHelper();
+	void vUnleashChaos();
+	void vExterminateClones();
+	vector<int> vGetRandomRange();
 
 	
 
 private:
 	//CSubPopulation* pcHelperPop;
+	vector<CLFLnetEvaluator*>* pvpcEvaluators;
 	std::vector<CSubPopulation*> vpcSubPopulations;
 	vector<vector<CIndividual*>*> vpcBestGenes;
-	vector<thread*> vptThreads;
+	CLFLnetEvaluator* pcEv;
+	COptimizer* pcOpt;
 
-	mutex mMutex;
 	vector<int> vCurrentBest;
 	double dBestFitness;
 
