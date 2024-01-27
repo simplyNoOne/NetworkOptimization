@@ -6,14 +6,14 @@ const int I_TIME = 1800;
 
 //----------------GENERAL
 const double D_MUTATION_CHANCE = 0.001;
-const double D_PARENT_MUTATION = 0.009;		//byl9 0,0079
+const double D_PARENT_MUTATION = 0.0079;		//byl9 0,0079
 const double D_CROSSOVER_CHANCE = 0.71;
 const int I_GAP = 3; 
 
 //----------------SIZING
-const int I_POP_SIZE = 462;
+const int I_POP_SIZE = 762;
 const int I_START_POP = 60;
-const int I_POP_STEP = 6;
+const int I_POP_STEP = 8;
 const int I_POP_INCR_INTERVAL = 69;
 
 //----------------SUBPOPS
@@ -36,8 +36,8 @@ const int I_FANCIFY = 5;
 
 //------------VARIETY
 const int I_WAIT = 14;		//13
-const int I_MIG_WAIT = 2 * I_WAIT;		//bylo 3
-const int I_CHAOS_WAIT = 3 * I_WAIT;
+const int I_MIG_WAIT = 3 * I_WAIT;		//bylo 3
+const int I_CHAOS_WAIT = 5 * I_WAIT;
 const int I_KILL_WAIT = 110;
 const int I_KILL_STAG_WAIT = 3.5 * I_WAIT;
 const int I_CLONE_TH = 5;
@@ -49,7 +49,7 @@ const int I_CHAOS_GENES = 100;
 const double D_GENE_PEN_MEAN = 0.00008;
 const double D_GENE_PEN_DEV = 0.00005;
 const double D_PARENT_PEN_MEAN = 0.0002;  //0.0002
-const double D_PARENT_PEN_DEV = 0.0008;		//0.0004
+const double D_PARENT_PEN_DEV = 0.0006;		//0.0004
 const double D_CROSS_PEN_MEAN = 0.03;
 const double D_CROSS_PEN_DEV = 0.08;
 

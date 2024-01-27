@@ -131,6 +131,7 @@ int CSubPopulation::iGetParentsId1() {
 
 void CSubPopulation::vChooseParents(CIndividual* &pcP1, CIndividual* &pcP2) {
 	do {
+		
 		if (cOpt->iGetGens() % I_FANCIFY == 0) {
 			double dMethod = MyMath::dRand();
 			if (cOpt->iGetStagnation() > I_WAIT && dMethod < D_MET3_TH) {
