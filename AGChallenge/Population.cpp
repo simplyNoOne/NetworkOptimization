@@ -60,6 +60,11 @@ double CSubPopulation::dGetBestValue()
 	return vpcIndividuals->at(0)->dGetFitness();
 }
 
+void CSubPopulation::vGetParentsId3(int* iPos1, int* iPos2) {
+	*iPos1 = MyMath::dRand() * cOpt->iPrevPopSize;
+	*iPos2 = cOpt->iPrevPopSize - *iPos1 - 1;
+}
+
 int CSubPopulation::iGetParentsId2() {
 	int iPos1 = MyMath::dRand() * (cOpt->iPrevPopSize);
 	int iPos2 = MyMath::dRand() * (cOpt->iPrevPopSize);
@@ -68,6 +73,8 @@ int CSubPopulation::iGetParentsId2() {
 	}
 	return iPos2;
 }
+
+//add another parent choosing method
 
 void CSubPopulation::vOrder99()
 {
@@ -91,10 +98,25 @@ void CSubPopulation::vOrder99()
 	}
 	cout << "guys to murder: " << vMurderSpots.size() << endl;
 #pragma omp parallel for
-	for (int i = 0; i < vMurderSpots.size(); i++) {
-		vpcIndividuals->at(vMurderSpots[i])->vMutate(pvpcEvaluators->at(i));
+	for (int i = 0; i < (vMurderSpots.size() / 2); i += 2) {
+		if (i % 4 == 0) {
+			vpcIndividuals->at(vMurderSpots[i])->vMutate(pvpcEvaluators->at(i));
+			vpcIndividuals->at(vMurderSpots[i + 1])->vMutate(pvpcEvaluators->at(i));
+		}
+		CIndividual* pcC1 = new CIndividual(cOpt);
+		CIndividual* pcC2 = new CIndividual(cOpt);
+		CIndividual* pcParent = vpcIndividuals->at(vMurderSpots[i]);
+		delete vpcIndividuals->at(vMurderSpots[i + 1]);
+		CIndividual::vCrossover(pcDaBest, pcParent, pcC1, pcC2);
+		delete vpcIndividuals->at(vMurderSpots[i]);
+		pcC1->vMutate(pvpcEvaluators->at(i));
+		pcC2->vMutate(pvpcEvaluators->at(i));
+		vpcIndividuals->at(vMurderSpots[i]) = pcC1;
+		vpcIndividuals->at(vMurderSpots[i + 1]) = pcC2;
 	}
-
+	if (vMurderSpots.size() % 2 == 1) {
+		vpcIndividuals->at(vMurderSpots[vMurderSpots.size() - 1])->vMutate(cEv);
+	}
 }
 
 int CSubPopulation::iGetParentsId1() {
@@ -107,17 +129,17 @@ int CSubPopulation::iGetParentsId1() {
 	return iGrpId * cOpt->iSubGrpSize + iGrpPos;
 }
 
-void CSubPopulation::vCrossMutate()
-{
-	
-	int iNewPopSize = 0;
-	
-	std::vector<CIndividual*>* pvpcNewPop = new std::vector<CIndividual*>();
-	while (iNewPopSize < cOpt->iCurrentPopSize) {
-		CIndividual* pcP1;
-		CIndividual* pcP2;
-		do {
-			if ((cOpt->iGetStagnation() > 0 && cOpt->iGetStagnation() % 3 == 0) || cOpt->iGetGens() % I_ALT_PARENT_CHOOSING == 0) {
+void CSubPopulation::vChooseParents(CIndividual* &pcP1, CIndividual* &pcP2) {
+	do {
+		if (cOpt->iGetGens() % I_FANCIFY == 0) {
+			double dMethod = MyMath::dRand();
+			if (cOpt->iGetStagnation() > I_WAIT && dMethod < D_MET3_TH) {
+				int iPos1, iPos2;
+				vGetParentsId3(&iPos1, &iPos2);
+				pcP1 = vpcIndividuals->at(iPos1);
+				pcP2 = vpcIndividuals->at(iPos2);
+			}
+			else if (cOpt->iGetStagnation() > 0 || dMethod < D_MET2_TH) {
 				pcP1 = vpcIndividuals->at(iGetParentsId2());
 				pcP2 = vpcIndividuals->at(iGetParentsId2());
 			}
@@ -125,60 +147,59 @@ void CSubPopulation::vCrossMutate()
 				pcP1 = vpcIndividuals->at(iGetParentsId1());
 				pcP2 = vpcIndividuals->at(iGetParentsId1());
 			}
-			//maybe?
-			if (cOpt->iGetStagnation() > 0 && cOpt->iGetStagnation() % I_ALT_PARENT_CHOOSING == 0) {
-				pcP1 = pcDaBest;
-			}
-		} while (pcP1->dGetFitness() == pcP2->dGetFitness());
+		}
+		else {
+			pcP1 = vpcIndividuals->at(iGetParentsId1());
+			pcP2 = vpcIndividuals->at(iGetParentsId1());
+		}
+
+	} while (pcP1->dGetFitness() == pcP2->dGetFitness());
+}
+
+void CSubPopulation::vCrossMutate()
+{
+	int iNewPopSize = 0;
+	
+	std::vector<CIndividual*>* pvpcNewPop = new std::vector<CIndividual*>();
+	while (iNewPopSize < cOpt->iCurrentPopSize) {
+		CIndividual* pcP1;
+		CIndividual* pcP2;
+
+		vChooseParents(pcP1, pcP2);
+		
 		
 		if (MyMath::dRand() < iId * D_CROSS_POP_SHIFT + D_CROSSOVER_CHANCE + cOpt->dCrossPenalty) {
 			CIndividual* pcC1 = new CIndividual(cOpt);
 			CIndividual* pcC2 = new CIndividual(cOpt);
+		
 
+			CIndividual::vCrossover(pcP1, pcP2, pcC1, pcC2);
 
-			//CIndividual::vCrossover(pcP1, pcP2, pcC1, pcC2);
-			//
-			//pcC1->vMutate(cEv);
-			//pcC2->vMutate(cEv);
-			//pcC2->vEvaluateFitness(cEv);
+			pcC1->vMutate(cEv);
+			pcC2->vMutate(cEv);
+
+			pcC1->vEvaluateFitness(cEv);
+			pcC2->vEvaluateFitness(cEv);
+
+			if (pcC1->dGetFitness() < pcC2->dGetFitness()) {
+
+				CIndividual* temp = pcC1;
+				pcC1 = pcC2;
+				pcC2 = temp;
+			}
+
 			
-
-			int iTries = 0;
-			do {
-				pcC1->vClearSol();
-				pcC2->vClearSol();
-
-				CIndividual::vCrossover(pcP1, pcP2, pcC1, pcC2);
-
-				pcC1->vMutate(cEv);
-				pcC2->vMutate(cEv);
-
-				pcC1->vEvaluateFitness(cEv);
-				pcC2->vEvaluateFitness(cEv);
-
-				if (pcC1->dGetFitness() < pcC2->dGetFitness()) {
-
-					CIndividual* temp = pcC1;
-					pcC1 = pcC2;
-					pcC2 = temp;
-				}
-				
-				iTries++;
-			} while (iTries < 3 && pcC1->dGetFitness() < pcP2->dGetFitness());
-
-			if (pcP1->dGetFitness() >= pcC2->dGetFitness()) {
+			if (pcP1->dGetFitness() > pcC2->dGetFitness()) {
 				pvpcNewPop->push_back(new CIndividual(pcP1));
 				pvpcNewPop->at(pvpcNewPop->size() - 1)->vMutate(cEv);
 				delete pcC2;
 			}
 			else {
-				pvpcNewPop->push_back((pcC2));
+				pvpcNewPop->push_back(pcC2);
 			}
-			pvpcNewPop->push_back((pcC1));
-			//pvpcNewPop->push_back((pcC2));
+			pvpcNewPop->push_back(pcC1);
 		}
 		else {
-			
 			pvpcNewPop->push_back(new CIndividual(pcP1));
 			pvpcNewPop->push_back(new CIndividual(pcP2));
 			if (MyMath::dRand() < (iId * D_PAR_POP_SHIFT + D_PARENT_MUTATION + cOpt->dParentPenalty)) {
@@ -365,9 +386,13 @@ void CPopulation::vUnleashChaos()
 {
 	cout << "----------CHAOS------------\n";
 	vector<int>vPos = vGetRandomRange();
+	int iCount = I_CHAOS_COUNT;
+	if (iCount > pcOpt->iPrevPopSize) {
+		iCount = pcOpt->iPrevPopSize;
+	}
 
 #pragma omp parallel for
-	for (int i = 0; i < I_CHAOS_COUNT; i++) {
+	for (int i = 0; i < iCount; i++) {
 		int iPop = MyMath::dRand()* (I_SUB_POPS + I_HELPERS);
 		vpcSubPopulations[iPop]->vDoChaos(vPos[i], pvpcEvaluators->at(i));
 	}
@@ -377,11 +402,17 @@ vector<int> CPopulation::vGetRandomRange()
 {
 	int iMax = pcOpt->iPrevPopSize;
 	vector<int> list(iMax);
+
+	int iCount = I_CHAOS_COUNT;
+	if (iCount > iMax) {
+		iCount = iMax;
+	}
+
 	for (int i = 0; i < iMax; i++) {
 		list[i] = i;
 	}
-	vector<int> res(I_CHAOS_COUNT);
-	for (int i = 0; i < I_CHAOS_COUNT; i++) {
+	vector<int> res(iCount);
+	for (int i = 0; i < iCount; i++) {
 		int j = i + MyMath::dRand() * (iMax - i);
 		int temp = list[i];
 		list[i] = list[j];

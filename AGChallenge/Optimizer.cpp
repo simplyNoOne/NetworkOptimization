@@ -12,17 +12,17 @@ COptimizer::COptimizer(CLFLnetEvaluator &cEvaluator)
 	: c_evaluator(cEvaluator)
 {
 	random_device c_seed_generator;
+}
 
+void COptimizer::vInitialize()
+{
 	dBestFitness = 0;
 	iGenerations = 0;
 	iStagnation = 0;
 	iCurrentPopSize = I_START_POP;
 	iSubGrpSize = I_START_POP / I_PARENTS_SUBGRPS;
 	iPrevPopSize = I_START_POP;
-}
 
-void COptimizer::vInitialize()
-{
 	dBestFitness = -DBL_MAX;
 	v_current_best.clear();
 	
@@ -38,20 +38,11 @@ void COptimizer::vRunIteration()
 	if (iGenerations % I_POP_INCR_INTERVAL == 0 && (iCurrentPopSize + I_POP_STEP) <= I_POP_SIZE) {
 		iCurrentPopSize += I_POP_STEP;
 	}
+
 	pcPopulation->vEvalSortAll();
-	if (I_SUB_POPS > 1 && iGenerations % I_MIGRATION_GAP == 0) {
-		pcPopulation->vExchangeBestGenes();
-		pcPopulation->vEvalSortIndividuals();
-	}
-	if (iGenerations % I_HELPER_POP_MIG == 0) {
-		pcPopulation->vGenBestFromHelper();
-		pcPopulation->vEvalSortIndividuals();
-	}
-	if (iGenerations % I_KILL_WAIT == 0) {
-		pcPopulation->vExterminateClones();
-		pcPopulation->vEvalSortAll();
-	}
-	
+
+
+
 	double dIterFitness = pcPopulation->dGetBestValue();
 	if (dIterFitness > dBestFitness) {
 		dBestFitness = dIterFitness;
@@ -61,32 +52,38 @@ void COptimizer::vRunIteration()
 		dGenePenalty = 0;
 		iStagnation = 0;
 	}
-	else{
+	else {
 		iStagnation++;
 		if (iStagnation % I_WAIT == 0) {
 			vGetNewRandParams();
-			if (iStagnation % I_KILL_STAG_WAIT == 0) {
-				pcPopulation->vExterminateClones();
-				pcPopulation->vEvalSortAll();
-			}
 		}
 	}
+
+
+
+	if ((iStagnation != 0 && iStagnation % I_MIG_WAIT == 0) || (iGenerations % I_MIGRATION_GAP == 0)) {
+		pcPopulation->vExchangeBestGenes();
+		pcPopulation->vEvalSortIndividuals();
+	}
+	else if (iGenerations % I_HELPER_POP_MIG == 0) {
+		pcPopulation->vGenBestFromHelper();
+		pcPopulation->vEvalSortIndividuals();
+	}
+	else if (iGenerations % I_KILL_WAIT == 0 || (iStagnation != 0 && iStagnation % I_KILL_STAG_WAIT == 0)) {
+		pcPopulation->vExterminateClones();
+		pcPopulation->vEvalSortAll();
+	}
+
+
+
+
 	
-	//cout << dBestFitness << endl;
-	//bsack here
 	pcPopulation->vCrossMutate();
 
-	if (iStagnation != 0 && iStagnation % I_WAIT == 0) {
-		pcPopulation->vEvalSortIndividuals();
-		if (iStagnation % I_MIG_WAIT == 0 ) {
-			pcPopulation->vExchangeBestGenes();
-		}
-		if (iStagnation % ( I_CHAOS_WAIT) == 0) {
-			pcPopulation->vUnleashChaos();
-		}
+	if (iStagnation != 0 && iStagnation % I_CHAOS_WAIT == 0) {
+		pcPopulation->vUnleashChaos();
 	}
 	
-
 	if (iPrevPopSize != iCurrentPopSize) {
 		iSubGrpSize = iCurrentPopSize / I_PARENTS_SUBGRPS;
 		iPrevPopSize += I_POP_STEP;

@@ -15,7 +15,7 @@ using namespace std;
 
 #define dMAX_TIME 20 * 60
 
-stringstream res("Results:\n");
+stringstream res("\nResults:\n");
 
 void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 {
@@ -77,11 +77,8 @@ void main(int iArgCount, char **ppcArgValues)
 
 	CString  s_test;
 
-	//vRunLFLExperiment(S_CASE);
-	vRunLFLExperiment("128b03");
-	vRunLFLExperiment("128d08");
-	vRunLFLExperiment("144b00");
-	vRunLFLExperiment("162b04");
+	vRunLFLExperiment(S_CASE);
+	//vRunLFLExperiment("g120d00");
 
 	cout << res.str();
 	//vRunLFLExperiment("162b00");
