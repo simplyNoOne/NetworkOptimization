@@ -38,16 +38,18 @@ void COptimizer::vRunIteration()
 	if (iGenerations % I_POP_INCR_INTERVAL == 0 && (iCurrentPopSize + I_POP_STEP) <= I_POP_SIZE) {
 		iCurrentPopSize += I_POP_STEP;
 	}
+
 	pcPopulation->vEvalSortAll();
-	if (I_SUB_POPS > 1 && iGenerations % I_MIGRATION_GAP == 0) {
+
+	if (iGenerations % I_MIGRATION_GAP == 0 || (iStagnation != 0 && iStagnation % I_MIG_WAIT == 0)) {
 		pcPopulation->vExchangeBestGenes();
 		pcPopulation->vEvalSortIndividuals();
 	}
-	if (iGenerations % I_HELPER_POP_MIG == 0) {
+	else if (iGenerations % I_HELPER_POP_MIG == 0) {
 		pcPopulation->vGenBestFromHelper();
 		pcPopulation->vEvalSortIndividuals();
 	}
-	if (iGenerations % I_KILL_WAIT == 0) {
+	else if (iGenerations % I_KILL_WAIT == 0 || (iStagnation != 0 && iStagnation % I_KILL_STAG_WAIT == 0)) {
 		pcPopulation->vExterminateClones();
 		pcPopulation->vEvalSortAll();
 	}
@@ -65,10 +67,7 @@ void COptimizer::vRunIteration()
 		iStagnation++;
 		if (iStagnation % I_WAIT == 0) {
 			vGetNewRandParams();
-			if (iStagnation % I_KILL_STAG_WAIT == 0) {
-				pcPopulation->vExterminateClones();
-				pcPopulation->vEvalSortAll();
-			}
+			
 		}
 	}
 	
@@ -76,15 +75,11 @@ void COptimizer::vRunIteration()
 	//bsack here
 	pcPopulation->vCrossMutate();
 
-	if (iStagnation != 0 && iStagnation % I_WAIT == 0) {
-		pcPopulation->vEvalSortIndividuals();
-		if (iStagnation % I_MIG_WAIT == 0 ) {
-			pcPopulation->vExchangeBestGenes();
-		}
-		if (iStagnation % ( I_CHAOS_WAIT) == 0) {
-			pcPopulation->vUnleashChaos();
-		}
+	
+	if (iStagnation != 0 && iStagnation % I_CHAOS_WAIT == 0) {
+		pcPopulation->vUnleashChaos();
 	}
+	
 	
 
 	if (iPrevPopSize != iCurrentPopSize) {

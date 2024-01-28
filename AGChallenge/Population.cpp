@@ -125,10 +125,6 @@ void CSubPopulation::vCrossMutate()
 				pcP1 = vpcIndividuals->at(iGetParentsId1());
 				pcP2 = vpcIndividuals->at(iGetParentsId1());
 			}
-			//maybe?
-			if (cOpt->iGetStagnation() > 0 && cOpt->iGetStagnation() % I_ALT_PARENT_CHOOSING == 0) {
-				pcP1 = pcDaBest;
-			}
 		} while (pcP1->dGetFitness() == pcP2->dGetFitness());
 		
 		if (MyMath::dRand() < iId * D_CROSS_POP_SHIFT + D_CROSSOVER_CHANCE + cOpt->dCrossPenalty) {
