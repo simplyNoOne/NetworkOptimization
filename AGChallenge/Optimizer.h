@@ -26,15 +26,19 @@ public:
 	void vRunIteration();
 	
 	void vRunUntil(const CExecutor* cExecutor);
-	double dGetBestFitness() { return dBestFitness; }
+	void vGetNewRandParams();
 
+
+	inline double dGetBestFitness() { return dBestFitness; }
+	inline int iGetGens() { return iGenerations; }
+	inline int iGetStagnation() { return iStagnation; }
 
 	inline ~COptimizer() {
 		delete pcPopulation;
 	}
 
-	void vGetNewRandParams();
-
+	
+public:
 	int iCurrentPopSize;
 	double dParentPenalty;
 	double dGenePenalty;
@@ -42,15 +46,12 @@ public:
 	int iSubGrpSize;
 	int iPrevPopSize;
 
-	int iGetGens() { return iGenerations; }
-	int iGetStagnation() { return iStagnation; }
 private:
-	//throw away
 	double dBestFitness;
 	int iGenerations;
 	int iStagnation;
+	bool bZeroPens;
 
-	//	Population* cPopulation;
 	CPopulation* pcPopulation;
 	
 
