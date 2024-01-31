@@ -13,9 +13,8 @@ using namespace TimeCounters;
 
 using namespace std;
 
-#define dMAX_TIME 20 * 60
+#define dMAX_TIME 25 * 60
 
-stringstream res("Results:\n");
 
 void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 {
@@ -35,20 +34,20 @@ void vRunExperiment(CLFLnetEvaluator &cConfiguredEvaluator)
 
 		vector<int>* sol;
 		bool found = false;
-		while (!found && d_time_passed <= I_TIME)
+		while (!found && d_time_passed <= dMAX_TIME)
 		{
 		
 			c_optimizer.vRunIteration();
 			sol = c_optimizer.pvGetCurrentBest();
 			found = (c_optimizer.dGetBestFitness() == 1);
-			std::cout << "GEN " << c_optimizer.iGetGens() << "\t| TIME " << d_time_passed << "\t| " << c_optimizer.dGetBestFitness() << "\t| SIZE " << c_optimizer.iCurrentPopSize << "\tPENS " << c_optimizer.dParentPenalty << ", " << c_optimizer.dGenePenalty << ", " << c_optimizer.dCrossPenalty << endl;
+			std::cout << "GEN " << c_optimizer.iGetGens() << "\t| TIME " << d_time_passed << "\t| " << c_optimizer.dGetBestFitness() << "\t| SIZE " << c_optimizer.iCurrentPopSize << "\tPENS P: " << c_optimizer.dParentPenalty << ", G: " << c_optimizer.dGenePenalty << ", C: " << c_optimizer.dCrossPenalty << endl;
 
 
 			c_time_counter.bGetTimePassed(&d_time_passed);
 		}
 
 		//c_optimizer.vRunUntil(new CStopAfterTime(I_TIME));
-		res << cConfiguredEvaluator.dEvaluate(sol)<< "\n";
+		cout << cConfiguredEvaluator.dEvaluate(sol)<< "( "<< d_time_passed <<")\n";
 		//cout<<c_optimizer.dGetBestFitness();
 	}//try
 	catch (exception &c_exception)
@@ -77,16 +76,12 @@ void main(int iArgCount, char **ppcArgValues)
 
 	CString  s_test;
 
-	//vRunLFLExperiment(S_CASE);
-	vRunLFLExperiment("128b03");
-	vRunLFLExperiment("128d08");
-	vRunLFLExperiment("144b00");
-	vRunLFLExperiment("162b04");
+	//vRunLFLExperiment("g120d00");
 
-	cout << res.str();
-	//vRunLFLExperiment("162b00");
-	//vRunLFLExperiment("144d07");
-	//vRunLFLExperiment("128d08");
+	//vRunLFLExperiment("114b04");
+	//vRunLFLExperiment("114b00");
+	vRunLFLExperiment("114b04");
+	
 	//vRunLFLExperiment("162096");
 	//vRunLFLExperiment("g120081");
 

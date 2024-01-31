@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include "settings.h"
-#include <mutex>
 #include "Evaluator.h"
 
 class CIndividual;
@@ -42,8 +41,10 @@ public:
 
 
 private:
+	void vChooseParents(CIndividual* &pcP1, CIndividual* &pcP2);
 	int iGetParentsId1();
 	int iGetParentsId2();
+	void vGetParentsId3(int* iPos1, int* iPos2);
 	
 };
 
@@ -78,7 +79,6 @@ public:
 	
 
 private:
-	//CSubPopulation* pcHelperPop;
 	vector<CLFLnetEvaluator*>* pvpcEvaluators;
 	std::vector<CSubPopulation*> vpcSubPopulations;
 	vector<vector<CIndividual*>*> vpcBestGenes;
