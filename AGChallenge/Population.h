@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include "settings.h"
-#include <mutex>
 #include "Evaluator.h"
 
 class CIndividual;

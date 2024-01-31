@@ -96,7 +96,6 @@ void CSubPopulation::vOrder99()
 			}
 		}
 	}
-	cout << "guys to murder: " << vMurderSpots.size() << endl;
 #pragma omp parallel for
 	for (int i = 0; i < (vMurderSpots.size() / 2); i += 2) {
 		if (i % 4 == 0) {
@@ -134,13 +133,20 @@ void CSubPopulation::vChooseParents(CIndividual* &pcP1, CIndividual* &pcP2) {
 		
 		if (cOpt->iGetGens() % I_FANCIFY == 0) {
 			double dMethod = MyMath::dRand();
+			
 			if (cOpt->iGetStagnation() > I_WAIT && dMethod < D_MET3_TH) {
 				int iPos1, iPos2;
+				
 				vGetParentsId3(&iPos1, &iPos2);
-				pcP1 = vpcIndividuals->at(iPos1);
+				if (cOpt->iGetStagnation() % I_WAIT == 0) {
+					pcP1 = pcDaBest;
+				}
+				else {
+					pcP1 = vpcIndividuals->at(iPos1);
+				}
 				pcP2 = vpcIndividuals->at(iPos2);
 			}
-			else if (cOpt->iGetStagnation() > 0 || dMethod < D_MET2_TH) {
+			else if (cOpt->iGetStagnation() > I_WAIT || dMethod < D_MET2_TH) {
 				pcP1 = vpcIndividuals->at(iGetParentsId2());
 				pcP2 = vpcIndividuals->at(iGetParentsId2());
 			}
@@ -342,7 +348,6 @@ void CPopulation::vCrossMutate()
 
 void CPopulation::vExchangeBestGenes()
 {
-	cout << "-----MIGRATION-----\n";
 #pragma omp parallel for
 	for (int i = 0; i < I_SUB_POPS; i++) {
 		for (int j = 0; j < I_BEST_TO_MIGRATE; j++) {
@@ -371,7 +376,6 @@ void CPopulation::vExchangeBestGenes()
 
 void CPopulation::vGenBestFromHelper()
 {
-	cout << "-----BEST FROM HELPER-----\n";
 	int iHelper = MyMath::dRand() * I_HELPERS;
 	vector<CIndividual*>* pvpcGenesToMigrate = vpcSubPopulations[I_SUB_POPS + iHelper]->pvpcGetTopGenes(I_BEST_TO_MIGRATE/2);
 	int iSubPop = MyMath::dRand() * I_SUB_POPS;
@@ -385,7 +389,6 @@ void CPopulation::vGenBestFromHelper()
 
 void CPopulation::vUnleashChaos()
 {
-	cout << "----------CHAOS------------\n";
 	vector<int>vPos = vGetRandomRange();
 	int iCount = I_CHAOS_COUNT;
 	if (iCount > pcOpt->iPrevPopSize) {
@@ -426,7 +429,6 @@ vector<int> CPopulation::vGetRandomRange()
 
 void CPopulation::vExterminateClones()
 {
-	cout << "-----------ORDER 99\n";
 	for (int i = 0; i < I_SUB_POPS + I_HELPERS; i++) {
 		vpcSubPopulations[i]->vOrder99();
 	}

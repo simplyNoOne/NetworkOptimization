@@ -50,6 +50,7 @@ private:
 	double dBestFitness;
 	int iGenerations;
 	int iStagnation;
+	bool bZeroPens;
 
 	CPopulation* pcPopulation;
 	

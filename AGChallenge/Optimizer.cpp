@@ -16,6 +16,7 @@ COptimizer::COptimizer(CLFLnetEvaluator &cEvaluator)
 
 void COptimizer::vInitialize()
 {
+	bZeroPens = true;
 	dBestFitness = 0;
 	iGenerations = 0;
 	iStagnation = 0;
@@ -42,24 +43,27 @@ void COptimizer::vRunIteration()
 	pcPopulation->vEvalSortAll();
 
 
-
 	double dIterFitness = pcPopulation->dGetBestValue();
 	if (dIterFitness > dBestFitness) {
 		dBestFitness = dIterFitness;
 		v_current_best = pcPopulation->vGetBest();
-		dParentPenalty = 0;
-		dCrossPenalty = 0;
-		dGenePenalty = 0;
+		
 		iStagnation = 0;
+		bZeroPens = true;
 	}
 	else {
 		iStagnation++;
 		if (iStagnation % I_WAIT == 0) {
+			bZeroPens = false;
 			vGetNewRandParams();
 		}
 	}
-
-
+	if ((bZeroPens && iGenerations % I_WAIT == 0) || iStagnation % I_RESET == 0) {
+		iStagnation = 0;
+		dParentPenalty = 0;
+		dCrossPenalty = 0;
+		dGenePenalty = 0;
+	}
 
 	if ((iStagnation != 0 && iStagnation % I_MIG_WAIT == 0) || (iGenerations % I_MIGRATION_GAP == 0)) {
 		pcPopulation->vExchangeBestGenes();
@@ -69,12 +73,10 @@ void COptimizer::vRunIteration()
 		pcPopulation->vGenBestFromHelper();
 		pcPopulation->vEvalSortIndividuals();
 	}
-	else if (iGenerations % I_KILL_WAIT == 0 || (iStagnation != 0 && iStagnation % I_KILL_STAG_WAIT == 0)) {
+	else if (iGenerations % I_KILL_WAIT == 0) {
 		pcPopulation->vExterminateClones();
 		pcPopulation->vEvalSortAll();
 	}
-
-
 
 
 	
@@ -104,14 +106,14 @@ void COptimizer::vGetNewRandParams()
 	std::normal_distribution<double> distribution1(D_PARENT_PEN_MEAN, D_PARENT_PEN_DEV);	
 	dParentPenalty = distribution1(generator);
 	
-	if(MyMath::dRand() > 0.5) {
+	/*if(MyMath::dRand() < 0.1) {
 		dParentPenalty *= -1;
-	}
+	}*/
 
 	std::normal_distribution<double> distribution2(D_CROSS_PEN_MEAN, D_CROSS_PEN_DEV);
 	dCrossPenalty = distribution2(generator);
 
-	if (MyMath::dRand() > 0.5) {
+	if (MyMath::dRand() < 0.2) {
 		dCrossPenalty *= -1;
 	}
 
